@@ -37,4 +37,7 @@ git push origin <ブランチ名>
 
 6. ブラウザのGithubでpull requestを作成する
 
+7. sayachuがブラウザのGithubでpull requestを作成する
+
+
 </div></details>
