@@ -9,17 +9,17 @@ git branch -M main
 git remote add origin https://github.com/sbmtrntr/Hackathon_team4.git
 ```
 
-1. ローカルでmainブランチに移動
+1. ローカルでdevelopブランチに移動
 ```bash
-git checkout main
+git checkout develop
 ```
 
 2. 最新のリモートリポジトリをpullする
 ```bash
-git pull origin main
+git pull origin develop
 ```
 
-3. ローカルのmainブランチから、新しくブランチを作成する
+3. ローカルのdevelopブランチから、新しくブランチを作成する
 ```bash
 git switch -c <ブランチ名>
 ```
