@@ -3,7 +3,7 @@
 
 2. 以下モジュールをインストール
 
-    `pip install supabase-py python-dotenv fastapi uvicorn`
+    `pip install -r requirements.txt`
 
 3. このディレクトリ下に移動し、以下を実行
 
@@ -28,7 +28,7 @@ curl -X POST http://localhost:8080/drop-user-attributes
 curl -X POST http://localhost:8080/drop-matching-history
 curl -X POST http://localhost:8080/drop-slack-channels
 
-# 各テーブルの架空データの挿入
+# 各テーブルに架空データを挿入
 curl -X POST http://localhost:8080/insert-users
 curl -X POST http://localhost:8080/insert-user-attributes
 ```
