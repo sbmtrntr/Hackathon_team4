@@ -6,7 +6,7 @@ router = APIRouter()
 # 各テーブルの作成クエリ
 CREATE_USERS_SQL = """
 CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     slack_id VARCHAR(50) UNIQUE NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE_USER_ATTRIBUTES_SQL = """
 CREATE TABLE IF NOT EXISTS user_attributes (
-    user_id INT PRIMARY KEY,
+    user_id UUID PRIMARY KEY,
     hobbies TEXT NOT NULL,
     hometown VARCHAR(50) NOT NULL,
     field VARCHAR(10) CHECK (field IN ('公共', '法人', '金融', 'TC&S', '技統本')) NOT NULL,
@@ -79,34 +79,34 @@ INSERT INTO users (name, email, slack_id, created_at) VALUES
 
 INSERT_USER_ATTRIBUTES_SQL = """
 INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, preferences) VALUES
-(1, '読書, 旅行, 映画鑑賞', '東京都', '公共', 'SE', 'hometown'),
-(2, '料理, ヨガ, 写真', '大阪府', '法人', '営業', 'field'),
-(3, '登山, スポーツ, 音楽', '愛知県', '金融', 'コンサル', 'role'),
-(4, 'ゲーム, プログラミング, カフェ巡り', '福岡県', 'TC&S', 'SE', 'hobbies'),
-(5, '映画, 読書, アウトドア', '北海道', '技統本', 'スタッフ', 'hobbies'),
-(6, 'ドライブ, 旅行, 温泉巡り', '京都府', '公共', '営業', 'role'),
-(7, 'ハイキング, スポーツ観戦, 料理', '兵庫県', '法人', 'コンサル', 'hometown'),
-(8, 'DIY, 読書, 筋トレ', '広島県', '金融', 'スタッフ', 'field'),
-(9, 'アニメ, ゲーム, 映画', '宮城県', 'TC&S', 'SE', 'hobbies'),
-(10, '写真, 旅行, サイクリング', '長野県', '技統本', '営業', 'field'),
-(11, 'アウトドア, バイク, 料理', '新潟県', '公共', 'コンサル', 'role'),
-(12, '映画, 音楽, 読書', '岡山県', '法人', 'スタッフ', 'hometown'),
-(13, '釣り, スポーツ, 旅行', '茨城県', '金融', 'SE', 'field'),
-(14, 'ヨガ, ガーデニング, カフェ巡り', '栃木県', 'TC&S', '営業', 'hobbies'),
-(15, '筋トレ, 読書, 音楽鑑賞', '群馬県', '技統本', 'コンサル', 'role'),
-(16, 'ジョギング, 料理, 登山', '静岡県', '公共', 'スタッフ', 'role'),
-(17, '映画, ゲーム, プログラミング', '熊本県', '法人', 'SE', 'hometown'),
-(18, '温泉巡り, 旅行, 写真', '山形県', '金融', '営業', 'field'),
-(19, 'ランニング, ハイキング, 読書', '滋賀県', 'TC&S', 'コンサル', 'hobbies'),
-(20, '音楽, ダンス, 料理', '奈良県', '技統本', 'スタッフ', 'hometown');
+((SELECT id FROM users WHERE email = 'tanaka.taro@example.com'), '読書, 旅行, 映画鑑賞', '東京都', '公共', 'SE', 'hometown'),
+((SELECT id FROM users WHERE email = 'sato.hanako@example.com'), '料理, ヨガ, 写真', '大阪府', '法人', '営業', 'field'),
+((SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), '登山, スポーツ, 音楽', '愛知県', '金融', 'コンサル', 'role'),
+((SELECT id FROM users WHERE email = 'takahashi.jiro@example.com'), 'ゲーム, プログラミング, カフェ巡り', '福岡県', 'TC&S', 'SE', 'hobbies'),
+((SELECT id FROM users WHERE email = 'yamamoto.saburo@example.com'), '映画, 読書, アウトドア', '北海道', '技統本', 'スタッフ', 'hobbies'),
+((SELECT id FROM users WHERE email = 'nakamura.shiro@example.com'), 'ドライブ, 旅行, 温泉巡り', '京都府', '公共', '営業', 'role'),
+((SELECT id FROM users WHERE email = 'kobayashi.goko@example.com'), 'ハイキング, スポーツ観戦, 料理', '兵庫県', '法人', 'コンサル', 'hometown'),
+((SELECT id FROM users WHERE email = 'kato.rokuta@example.com'), 'DIY, 読書, 筋トレ', '広島県', '金融', 'スタッフ', 'field'),
+((SELECT id FROM users WHERE email = 'ito.nanami@example.com'), 'アニメ, ゲーム, 映画', '宮城県', 'TC&S', 'SE', 'hobbies'),
+((SELECT id FROM users WHERE email = 'watanabe.hachiro@example.com'), '写真, 旅行, サイクリング', '長野県', '技統本', '営業', 'field'),
+((SELECT id FROM users WHERE email = 'matsumoto.kyube@example.com'), 'アウトドア, バイク, 料理', '新潟県', '公共', 'コンサル', 'role'),
+((SELECT id FROM users WHERE email = 'hayashi.juichi@example.com'), '映画, 音楽, 読書', '岡山県', '法人', 'スタッフ', 'hometown'),
+((SELECT id FROM users WHERE email = 'shimizu.kyoko@example.com'), '釣り, スポーツ, 旅行', '茨城県', '金融', 'SE', 'field'),
+((SELECT id FROM users WHERE email = 'yamada.kazuko@example.com'), 'ヨガ, ガーデニング, カフェ巡り', '栃木県', 'TC&S', '営業', 'hobbies'),
+((SELECT id FROM users WHERE email = 'fujita.hikaru@example.com'), '筋トレ, 読書, 音楽鑑賞', '群馬県', '技統本', 'コンサル', 'role'),
+((SELECT id FROM users WHERE email = 'okamoto.makoto@example.com'), 'ジョギング, 料理, 登山', '静岡県', '公共', 'スタッフ', 'role'),
+((SELECT id FROM users WHERE email = 'shimada.sora@example.com'), '映画, ゲーム, プログラミング', '熊本県', '法人', 'SE', 'hometown'),
+((SELECT id FROM users WHERE email = 'harada.hitomi@example.com'), '温泉巡り, 旅行, 写真', '山形県', '金融', '営業', 'field'),
+((SELECT id FROM users WHERE email = 'miura.ren@example.com'), 'ランニング, ハイキング, 読書', '滋賀県', 'TC&S', 'コンサル', 'hobbies'),
+((SELECT id FROM users WHERE email = 'ishii.kaze@example.com'), '音楽, ダンス, 料理', '奈良県', '技統本', 'スタッフ', 'hometown');
 """
 
 # 汎用的な関数
 def execute_sql(query: str):
-    """SupabaseでSQLを実行する"""
+    """execute_sql を呼び出して任意のSQLを実行"""
     try:
-        supabase.postgrest.rpc("execute_sql", {"sql": query}).execute()
-        return {"message": "Query executed successfully"}
+        response = supabase.rpc("execute_sql", {"sql": query}).execute()
+        return {"message": "Query executed successfully", "response": response.data}
     except Exception as e:
         return {"error": str(e)}
 
@@ -143,3 +143,12 @@ def drop_matching_history():
 @router.post("/drop-slack-channels")
 def drop_slack_channels():
     return execute_sql(DROP_SLACK_CHANNELS_SQL)
+
+# 各テーブルの架空データ挿入API
+@router.post("/insert-users")
+def insert_users():
+    return execute_sql(INSERT_USERS_SQL)
+
+@router.post("/insert-user-attributes")
+def insert_user_attributes():
+    return execute_sql(INSERT_USER_ATTRIBUTES_SQL)
