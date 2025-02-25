@@ -40,4 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.DS_Store
+# vscode
+.vscode
+
+# python
+__pycache__
