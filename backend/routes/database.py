@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     slack_id VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     created_at DATE NOT NULL
 );
 """
@@ -54,27 +55,28 @@ DROP_SLACK_CHANNELS_SQL = "DROP TABLE IF EXISTS slack_channels CASCADE;"
 
 # 各テーブルの架空データ挿入クエリ
 INSERT_USERS_SQL = """
-INSERT INTO users (name, email, slack_id, created_at) VALUES
-('田中 太郎', 'tanaka.taro@example.com', 'U12345678', '2023-05-01'),
-('佐藤 花子', 'sato.hanako@example.com', 'U87654321', '2023-05-02'),
-('鈴木 一郎', 'suzuki.ichiro@example.com', 'U23456789', '2023-05-03'),
-('高橋 次郎', 'takahashi.jiro@example.com', 'U34567890', '2023-05-04'),
-('山本 三郎', 'yamamoto.saburo@example.com', 'U45678901', '2023-05-05'),
-('中村 四郎', 'nakamura.shiro@example.com', 'U56789012', '2023-05-06'),
-('小林 五子', 'kobayashi.goko@example.com', 'U67890123', '2023-05-07'),
-('加藤 六太', 'kato.rokuta@example.com', 'U78901234', '2023-05-08'),
-('伊藤 七美', 'ito.nanami@example.com', 'U89012345', '2023-05-09'),
-('渡辺 八郎', 'watanabe.hachiro@example.com', 'U90123456', '2023-05-10'),
-('松本 九兵衛', 'matsumoto.kyube@example.com', 'U01234567', '2023-05-11'),
-('林 十一', 'hayashi.juichi@example.com', 'U11223344', '2023-05-12'),
-('清水 京子', 'shimizu.kyoko@example.com', 'U22334455', '2023-05-13'),
-('山田 一子', 'yamada.kazuko@example.com', 'U33445566', '2023-05-14'),
-('藤田 光', 'fujita.hikaru@example.com', 'U44556677', '2023-05-15'),
-('岡本 真', 'okamoto.makoto@example.com', 'U55667788', '2023-05-16'),
-('島田 空', 'shimada.sora@example.com', 'U66778899', '2023-05-17'),
-('原田 瞳', 'harada.hitomi@example.com', 'U77889900', '2023-05-18'),
-('三浦 蓮', 'miura.ren@example.com', 'U88990011', '2023-05-19'),
-('石井 風', 'ishii.kaze@example.com', 'U99001122', '2023-05-20');
+INSERT INTO users (name, email, slack_id, password_hash, created_at) VALUES
+('田中 太郎', 'tanaka.taro@example.com', 'U12345678', crypt('securepassword1', gen_salt('bf')), '2023-05-01'),
+('佐藤 花子', 'sato.hanako@example.com', 'U87654321', crypt('securepassword2', gen_salt('bf')), '2023-05-02'),
+('鈴木 一郎', 'suzuki.ichiro@example.com', 'U23456789', crypt('securepassword3', gen_salt('bf')), '2023-05-03'),
+('高橋 次郎', 'takahashi.jiro@example.com', 'U34567890', crypt('securepassword4', gen_salt('bf')), '2023-05-04'),
+('山本 三郎', 'yamamoto.saburo@example.com', 'U45678901', crypt('securepassword5', gen_salt('bf')), '2023-05-05'),
+('中村 四郎', 'nakamura.shiro@example.com', 'U56789012', crypt('securepassword6', gen_salt('bf')), '2023-05-06'),
+('小林 五子', 'kobayashi.goko@example.com', 'U67890123', crypt('securepassword7', gen_salt('bf')), '2023-05-07'),
+('加藤 六太', 'kato.rokuta@example.com', 'U78901234', crypt('securepassword8', gen_salt('bf')), '2023-05-08'),
+('伊藤 七美', 'ito.nanami@example.com', 'U89012345', crypt('securepassword9', gen_salt('bf')), '2023-05-09'),
+('渡辺 八郎', 'watanabe.hachiro@example.com', 'U90123456', crypt('securepassword10', gen_salt('bf')), '2023-05-10'),
+('松本 九兵衛', 'matsumoto.kyube@example.com', 'U01234567', crypt('securepassword11', gen_salt('bf')), '2023-05-11'),
+('林 十一', 'hayashi.juichi@example.com', 'U11223344', crypt('securepassword12', gen_salt('bf')), '2023-05-12'),
+('清水 京子', 'shimizu.kyoko@example.com', 'U22334455', crypt('securepassword13', gen_salt('bf')), '2023-05-13'),
+('山田 一子', 'yamada.kazuko@example.com', 'U33445566', crypt('securepassword14', gen_salt('bf')), '2023-05-14'),
+('藤田 光', 'fujita.hikaru@example.com', 'U44556677', crypt('securepassword15', gen_salt('bf')), '2023-05-15'),
+('岡本 真', 'okamoto.makoto@example.com', 'U55667788', crypt('securepassword16', gen_salt('bf')), '2023-05-16'),
+('島田 空', 'shimada.sora@example.com', 'U66778899', crypt('securepassword17', gen_salt('bf')), '2023-05-17'),
+('原田 瞳', 'harada.hitomi@example.com', 'U77889900', crypt('securepassword18', gen_salt('bf')), '2023-05-18'),
+('三浦 蓮', 'miura.ren@example.com', 'U88990011', crypt('securepassword19', gen_salt('bf')), '2023-05-19'),
+('石井 風', 'ishii.kaze@example.com', 'U99001122', crypt('securepassword20', gen_salt('bf')), '2023-05-20');
+
 """
 
 INSERT_USER_ATTRIBUTES_SQL = """
