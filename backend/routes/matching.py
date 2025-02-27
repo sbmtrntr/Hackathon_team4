@@ -83,7 +83,30 @@ def calculate_match_score(target_user, other_user):
 
     # preference（重視する点）を考慮し、該当項目のスコアに重みをつける（担当：しんや）
     # 例：target_userが「hometown」を重視している場合（つまり target_user["preferences"] == hometown"）、match_scores["hometown"]に重みをつける
+
+    # 重み(何倍にするか)を設定
+    # とりあえず一律で1.5倍
+    # preferenceを選ぶ際に、押した回数分だけ重みを倍増させるようにしても面白いかもしれません
+    preference_weights = {
+        "hometown": 1.5,
+        "field": 1.5,
+        "role": 1.5,
+        "mbti": 1.5,
+        "alma_mater": 1.5,
+        "hobbies": 1.5,
+    }
+
+    # target_user["preferences"]をリストにし、複数のpreferenceを選べることを想定
+    target_user_preferences = target_user.get("preferences", [])
+    # 文字列の場合、リスト化
+    if isinstance(target_user_preferences, str):
+        target_user_preferences = target_user_preferences.split(",")
     
+    # target_user["preferences"]に指定された項目のスコアを重み付け
+    for target_user_preference in target_user_preferences:
+        if target_user_preference in match_scores:
+            match_scores[target_user_preference] *= preference_weights.get(target_user_preference, 1)
+
     # スコアを合計
     score = round(sum(match_scores.values()), 2)
 
