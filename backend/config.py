@@ -7,3 +7,4 @@ if os.getenv("GAE_ENV") is None: # Cloud Run 環境では GAE_ENV が設定さ�
 
 SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
