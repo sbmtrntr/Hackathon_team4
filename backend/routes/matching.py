@@ -40,15 +40,50 @@ def calculate_match_score(target_user, other_user):
 
     # ここから担当（さやチュウ）
     # 出身地 (hometown) が一致したらmatch_scores["hometown"]に加算する
-    
+    if target_user["hometown"] == other_user["hometown"]:
+        match_scores["hometown"] += 1.0
     # 志望分野 (field) が一致したらmatch_scores["field"]加算する
-
+    if target_user["field"] == other_user["field"]:
+        match_scores["field"] += 1.0
     # 志望職種 (role) が一致したらmatch_scores["role"]に加算する
-
-    # MBTI (mbti) が一致したらmatch_scores["mbti"]に加算する（できれば一致だけでなく、相性がいいmbti同士でも加算したい）
+    if target_user["role"] == other_user["role"]:
+        match_scores["role"] += 1.0
+    # MBTI (mbti）の相性が良いまたは同じだったらmatch_scores["mbti"]に加算する
+    mbti1 = target_user["mbti"]
+    mbti2 = other_user["mbti"]
+    
+    #MBTIが完全一致なら+0.8、
+    #相性が良い組み合わせなら+1.0。
+    
+    best_matches = {
+        "INTJ": ["ESFJ", "ISFP", "INTP"],
+        "INTP": ["ESFP", "ISFJ", "ENTJ"],
+        "ENTJ": ["ISFJ", "INFP", "INTP"],
+        "ENTP": ["ISFP", "ESTP", "ENFP"],
+        "INFJ": ["ESTJ", "INFP", "ENFP"],
+        "INFP": ["ESTP", "ENFJ", "INFJ"],
+        "ENFJ": ["ISTJ", "INFP", "ESTP"],
+        "ENFP": ["ISTP", "ESTJ", "INFJ"],
+        "ISTJ": ["ENFJ", "ESTP", "ESFJ"],
+        "ISFJ": ["ENTJ", "INTP", "INFP"],
+        "ESTJ": ["INFJ", "ISFJ", "ESFJ"],
+        "ESFJ": ["INTJ", "ENTP", "ISFP"],
+        "ISTP": ["ENFP", "INFJ", "ESTJ"],
+        "ISFP": ["ENTP", "INTJ", "ESFP"],
+        "ESTP": ["INFP", "ENTP", "ESFJ"],
+        "ESFP": ["INTP", "ENTJ", "ISFJ"],
+    }
+    
+    if mbti1 == mbti2:
+        match_scores["mbti"] += 0.8
+    elif mbti2 in best_matches.get(mbti1, []):
+        match_scores["mbti"] += 1.0
+    else:
+        match_scores["mbti"] += 0.0
 
     # 出身大学 (alma_mater) が一致したらmatch_scores["alma_mater"]に加算する
-
+    if target_user["alma_mater"] == other_user["alma_mater"]:
+        match_scores["alma_mater"] += 1.0    
 
     # 趣味のマッチ度を計算(担当：shibarin)
     target_hobbies = target_user["hobbies"].split(",")
