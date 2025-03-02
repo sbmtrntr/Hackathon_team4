@@ -2,22 +2,22 @@ import React from 'react';
 import { Tabs, TabList, TabPanels, Tab, TabPanel, Center } from '@chakra-ui/react'
 
 type MenuBarProps = {
-  children: React.ReactNode;
+  children: [React.ReactNode, React.ReactNode];
 }
-const MenuBar: React.FC<MenuBarProps>= (childcomponents) => {
+const MenuBar: React.FC<MenuBarProps> = ({children}) => {
   return (
     <Center>
-      <Tabs size='md' colorScheme='#CFE7FF' mt={5} maxWidth="480px">
+      <Tabs size='md' mt={5} maxWidth="100vw">
         <TabList>
           <Tab>基本情報</Tab>
           <Tab>マッチング情報</Tab>
         </TabList>
-        <TabPanels>
+        <TabPanels bg='#CFE7FF'>
           <TabPanel>
-            {childcomponents.children}
+            {children[0]}
           </TabPanel>
           <TabPanel>
-            { childcomponents.children }
+            {children[1]}
           </TabPanel>
         </TabPanels>
       </Tabs>
