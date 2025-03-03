@@ -130,3 +130,13 @@ def calculate_match_score(target_user, other_user):
     score = round(sum(match_scores.values()), 2)
 
     return {"user_id": other_user["user_id"], "match_score": score}
+
+
+@router.get("/check_matching")
+def check_matching(user_id1: str, user_id2: str):
+    # 担当：しんや
+    # likesテーブルを使って、user_id1がuser_id2をlikeしているか、user_id2がuser_id1をlikeしているかを確認する
+    # 両方likeしている場合はマッチング成立として、Trueを返す
+    # いずれかがlikeしていない場合はマッチング成立していないとして、Falseを返す（デフォルトはFalse）
+
+    return {"match": False}

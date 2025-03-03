@@ -36,11 +36,19 @@ curl -X POST http://localhost:8080/insert-likes
 ```
 
 ## データベースの表を確認したいとき
+- 架空データなのでセキュリティを気にしていない
 - ブラウザで開いている場合は、プリティプリントにチェックを入れるとjsonが見やすくなります
+
 ```bash
 # usersテーブルの情報を取得
 curl -X GET http://localhost:8080/users
 
 # user_attributesテーブルの情報を取得
 curl -X GET http://localhost:8080/user_attributes
+
+# likesテーブルの情報を取得
+curl -X GET http://localhost:8080/likes
+
+# matchesテーブルの情報を取得
+curl -X GET http://localhost:8080/matches
 ```
