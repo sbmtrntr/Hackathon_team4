@@ -45,3 +45,4 @@ next-env.d.ts
 
 # python
 __pycache__
+entity_vector.model.bin
