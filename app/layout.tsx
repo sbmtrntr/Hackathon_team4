@@ -1,5 +1,6 @@
 import { Providers } from './providers';
 import type { Metadata } from 'next';
+import Header from './components/Header';
 
 export const metadata: Metadata = {
   title: 'Connect - Find Your Perfect Match',
@@ -14,7 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Header />
+          {children}
+          </Providers>
       </body>
     </html>
   );
