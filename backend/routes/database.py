@@ -4,6 +4,9 @@ from supabase_client import supabase
 router = APIRouter()
 
 # 各テーブルの作成クエリ
+
+# ユーザの個人情報を格納するテーブル
+# 使用目的：ユーザーの個人情報を保存し、ログイン認証やSlack誘導の際に利用する。
 CREATE_USERS_SQL = """
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -15,6 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 """
 
+# ユーザの属性情報を格納するテーブル
+# 使用目的：ユーザーの属性情報を保存し、マッチングの際に利用する。
 CREATE_USER_ATTRIBUTES_SQL = """
 CREATE TABLE IF NOT EXISTS user_attributes (
     user_id UUID PRIMARY KEY,
@@ -22,39 +27,44 @@ CREATE TABLE IF NOT EXISTS user_attributes (
     hometown VARCHAR(50),
     field VARCHAR(10) CHECK (field IN ('公共', '法人', '金融', 'TC&S', '技統本')) NOT NULL,
     role VARCHAR(10) CHECK (role IN ('SE', '営業', 'コンサル', 'スタッフ')) NOT NULL,
-    preferences VARCHAR(10) CHECK (preferences IN ('hobbies', 'hometown', 'field', 'role')) NOT NULL,
     mbti VARCHAR(4) CHECK (mbti IN ('INTJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP', 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESTP', 'ESFP')) NOT NULL,
-    alma_mater VARCHAR(100),
+    alma_mater VARCHAR(100) NOT NULL,
+    preferences VARCHAR(10) CHECK (preferences IN ('hobbies', 'hometown', 'field', 'role', 'mbti', 'alma_mater')) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
-
 """
 
-CREATE_MATCHING_HISTORY_SQL = """
-CREATE TABLE IF NOT EXISTS matching_history (
+# ユーザのいいね履歴を格納するテーブル
+# 使用目的：ユーザーが相手に「いいね」した記録を保存し、マッチングの成立を判定する。
+CREATE_LIKES_SQL = """
+    CREATE TABLE likes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        target_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, target_user_id) -- 1人につき1回だけ「いいね」できる
+    );
+"""
+
+# ユーザのマッチング履歴を格納するテーブル
+# 使用目的：双方が「いいね」したらマッチングが成立し、それを保存する。
+CREATE_MATCHES_SQL = """
+CREATE TABLE matches (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user1_id UUID REFERENCES users(id) ON DELETE CASCADE,
     user2_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    score FLOAT CHECK (score BETWEEN 0 AND 1),
-    matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user1_id, user2_id) -- 重複マッチを防ぐ
 );
 """
 
-CREATE_SLACK_CHANNELS_SQL = """
-CREATE TABLE IF NOT EXISTS slack_channels (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user1_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    user2_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    channel_id VARCHAR UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-"""
 
 # 各テーブルの削除クエリ
+
 DROP_USERS_SQL = "DROP TABLE IF EXISTS users CASCADE;"
 DROP_USER_ATTRIBUTES_SQL = "DROP TABLE IF EXISTS user_attributes CASCADE;"
-DROP_MATCHING_HISTORY_SQL = "DROP TABLE IF EXISTS matching_history CASCADE;"
-DROP_SLACK_CHANNELS_SQL = "DROP TABLE IF EXISTS slack_channels CASCADE;"
+DROP_LIKES_SQL = "DROP TABLE IF EXISTS likes CASCADE;"
+DROP_MATCHES_SQL = "DROP TABLE IF EXISTS matches CASCADE;"
 
 # 各テーブルの架空データ挿入クエリ
 INSERT_USERS_SQL = """
@@ -83,27 +93,36 @@ INSERT INTO users (name, email, slack_id, password_hash, created_at) VALUES
 """
 
 INSERT_USER_ATTRIBUTES_SQL = """
-INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, preferences, mbti, alma_mater) VALUES
-((SELECT id FROM users WHERE email = 'tanaka.taro@example.com'), '読書, 旅行, 映画鑑賞', '東京都', '公共', 'SE', 'hometown', 'INTJ', '早稲田大学'),
-((SELECT id FROM users WHERE email = 'sato.hanako@example.com'), '料理, ヨガ, 写真', '大阪府', '法人', '営業', 'field', 'ENTP', '慶應大学'),
-((SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), '登山, スポーツ, 音楽', '愛知県', '金融', 'コンサル', 'role', 'INFJ', '東京理科大学'),
-((SELECT id FROM users WHERE email = 'takahashi.jiro@example.com'), 'ゲーム, プログラミング, カフェ巡り', '福岡県', 'TC&S', 'SE', 'hobbies', 'ISTP', '大阪大学'),
-((SELECT id FROM users WHERE email = 'yamamoto.saburo@example.com'), '映画, 読書, アウトドア', '北海道', '技統本', 'スタッフ', 'hobbies', 'ENFP', '明治大学'),
-((SELECT id FROM users WHERE email = 'nakamura.shiro@example.com'), 'ドライブ, 旅行, 温泉巡り', '京都府', '公共', '営業', 'role', 'ESTJ', '中央大学'),
-((SELECT id FROM users WHERE email = 'kobayashi.goko@example.com'), 'ハイキング, スポーツ観戦, 料理', '兵庫県', '法人', 'コンサル', 'hometown', 'ISFJ', '早稲田大学'),
-((SELECT id FROM users WHERE email = 'kato.rokuta@example.com'), 'DIY, 読書, 筋トレ', '広島県', '金融', 'スタッフ', 'field', 'ENTJ', '慶應大学'),
-((SELECT id FROM users WHERE email = 'ito.nanami@example.com'), 'アニメ, ゲーム, 映画', '宮城県', 'TC&S', 'SE', 'hobbies', 'INFP', '東京理科大学'),
-((SELECT id FROM users WHERE email = 'watanabe.hachiro@example.com'), '写真, 旅行, サイクリング', '長野県', '技統本', '営業', 'field', 'ESFP', '大阪大学'),
-((SELECT id FROM users WHERE email = 'matsumoto.kyube@example.com'), 'アウトドア, バイク, 料理', '新潟県', '公共', 'コンサル', 'role', 'ISTJ', '早稲田大学'),
-((SELECT id FROM users WHERE email = 'hayashi.juichi@example.com'), '映画, 音楽, 読書', '岡山県', '法人', 'スタッフ', 'hometown', 'ISFP', NULL),
-((SELECT id FROM users WHERE email = 'shimizu.kyoko@example.com'), '釣り, スポーツ, 旅行', '茨城県', '金融', 'SE', 'field', 'ENFJ', '早稲田大学'),
-((SELECT id FROM users WHERE email = 'yamada.kazuko@example.com'), 'ヨガ, ガーデニング, カフェ巡り', '栃木県', 'TC&S', '営業', 'hobbies', 'ESTP', '大阪大学'),
-((SELECT id FROM users WHERE email = 'fujita.hikaru@example.com'), '筋トレ, 読書, 音楽鑑賞', '群馬県', '技統本', 'コンサル', 'role', 'INTP', '早稲田大学'),
-((SELECT id FROM users WHERE email = 'okamoto.makoto@example.com'), 'ジョギング, 料理, 登山', '静岡県', '公共', 'スタッフ', 'role', 'ESFJ', '明治大学'),
-((SELECT id FROM users WHERE email = 'shimada.sora@example.com'), '映画, ゲーム, プログラミング', '熊本県', '法人', 'SE', 'hometown', 'INFJ', '慶應大学'),
-((SELECT id FROM users WHERE email = 'harada.hitomi@example.com'), '温泉巡り, 旅行, 写真', '山形県', '金融', '営業', 'field', 'ISTP', NULL),
-((SELECT id FROM users WHERE email = 'miura.ren@example.com'), 'ランニング, ハイキング, 読書', '滋賀県', 'TC&S', 'コンサル', 'hobbies', 'ENTP', '中央大学'),
-((SELECT id FROM users WHERE email = 'ishii.kaze@example.com'), '音楽, ダンス, 料理', '奈良県', '技統本', 'スタッフ', 'hometown', 'INTJ', '東京理科大学');
+INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, mbti, alma_mater, preferences) VALUES
+((SELECT id FROM users WHERE email = 'tanaka.taro@example.com'), '読書, 旅行, 映画鑑賞', '東京都', '公共', 'SE', 'INTJ', '東京大学', 'hometown'),
+((SELECT id FROM users WHERE email = 'sato.hanako@example.com'), '料理, ボードゲーム, カメラ', '大阪府', '法人', '営業', 'ENTP', '京都大学', 'field'),
+((SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), '登山, スポーツ観戦, 音楽', '愛知県', '金融', 'コンサル', 'INFJ', '一橋大学', 'role'),
+((SELECT id FROM users WHERE email = 'takahashi.jiro@example.com'), 'ゲーム, プログラミング, カフェ', '福岡県', 'TC&S', 'SE', 'ISTP', '大阪大学', 'hobbies'),
+((SELECT id FROM users WHERE email = 'yamamoto.saburo@example.com'), '映画鑑賞, 読書, キャンプ', '北海道', '技統本', 'スタッフ', 'ENFP', '東北大学', 'mbti'),
+((SELECT id FROM users WHERE email = 'nakamura.shiro@example.com'), '釣り, 旅行, DIY', '京都府', '公共', '営業', 'ESTJ', '名古屋大学', 'alma_mater'),
+((SELECT id FROM users WHERE email = 'kobayashi.goko@example.com'), '登山, スポーツ観戦, 料理', '兵庫県', '法人', 'コンサル', 'ISFJ', '東京大学', 'hometown'),
+((SELECT id FROM users WHERE email = 'kato.rokuta@example.com'), 'DIY, 読書, 筋トレ', '広島県', '金融', 'スタッフ', 'ENTJ', '京都大学', 'field'),
+((SELECT id FROM users WHERE email = 'ito.nanami@example.com'), 'アニメ, ゲーム, 映画鑑賞', '宮城県', 'TC&S', 'SE', 'INFP', '東北大学', 'hobbies'),
+((SELECT id FROM users WHERE email = 'watanabe.hachiro@example.com'), 'カメラ, 旅行, 読書', '長野県', '技統本', '営業', 'ESFP', '大阪大学', 'mbti'),
+((SELECT id FROM users WHERE email = 'matsumoto.kyube@example.com'), 'キャンプ, バスケットボール, 料理', '新潟県', '公共', 'コンサル', 'ISTJ', '東京大学', 'alma_mater'),
+((SELECT id FROM users WHERE email = 'hayashi.juichi@example.com'), '映画鑑賞, 音楽, 読書', '岡山県', '法人', 'スタッフ', 'ISFP', '京都大学', 'hometown'),
+((SELECT id FROM users WHERE email = 'shimizu.kyoko@example.com'), '釣り, スポーツ観戦, 旅行', '茨城県', '金融', 'SE', 'ENFJ', '一橋大学', 'field'),
+((SELECT id FROM users WHERE email = 'yamada.kazuko@example.com'), 'ガーデニング, カフェ, ボードゲーム', '栃木県', 'TC&S', '営業', 'ESTP', '東北大学', 'hobbies'),
+((SELECT id FROM users WHERE email = 'fujita.hikaru@example.com'), '筋トレ, 読書, 音楽', '群馬県', '技統本', 'コンサル', 'INTP', '京都大学', 'role'),
+((SELECT id FROM users WHERE email = 'okamoto.makoto@example.com'), 'ランニング, 料理, 登山', '静岡県', '公共', 'スタッフ', 'ESFJ', '名古屋大学', 'role'),
+((SELECT id FROM users WHERE email = 'shimada.sora@example.com'), '映画鑑賞, ゲーム, プログラミング', '熊本県', '法人', 'SE', 'INFJ', '大阪大学', 'hometown'),
+((SELECT id FROM users WHERE email = 'harada.hitomi@example.com'), 'キャンプ, 旅行, 読書', '山形県', '金融', '営業', 'ISTP', '一橋大学', 'mbti'),
+((SELECT id FROM users WHERE email = 'miura.ren@example.com'), 'ランニング, 登山, 読書', '滋賀県', 'TC&S', 'コンサル', 'ENTP', '東京大学', 'alma_mater'),
+((SELECT id FROM users WHERE email = 'ishii.kaze@example.com'), '音楽, ダンス, 料理', '奈良県', '技統本', 'スタッフ', 'INTJ', '東北大学', 'mbti');
+"""
+
+INSERT_LIKES_SQL = """
+INSERT INTO likes (id, user_id, target_user_id, created_at) VALUES
+('b1f94672-4c23-4a8e-b5c5-61b4f3f5e7a1', 'bcc6f8ab-38cd-46b2-bd61-ac3d38546798', 'bfbc7642-091b-4d98-bce8-07aa4a7516e3', '2025-03-03 12:00:00'),
+('c2e58a6b-2d1f-48f6-b871-9a362b4f5d3e', 'bcc6f8ab-38cd-46b2-bd61-ac3d38546798', 'da74a3f9-79f2-44ee-b962-d031cc3886a1', '2025-03-03 12:05:00'),
+('d3c74e9c-4b47-4d2f-bacf-61a57d3f5a9e', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', '08014313-7b76-48cc-8dd3-dfa9914d6813', '2025-03-03 12:10:00'),
+('e4fda75d-5b92-4c83-987a-1b34e4a91b6c', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', 'b9d4b038-8f59-4502-853c-e53dbca2a015', '2025-03-03 12:15:00'),
+('f5e86b9c-3e7a-4094-bf8e-3f7b95f0e5a6', 'f209de1e-7162-4995-a6c7-f8a8a6de0dd4', '67ee4f6a-22d1-4d13-8d0d-ac7e205d9d06', '2025-03-03 12:20:00')
 """
 
 # 汎用的な関数
@@ -124,13 +143,14 @@ def create_users():
 def create_user_attributes():
     return execute_sql(CREATE_USER_ATTRIBUTES_SQL)
 
-@router.post("/create-matching-history")
-def create_matching_history():
-    return execute_sql(CREATE_MATCHING_HISTORY_SQL)
+@router.post("/create-likes")
+def create_likes():
+    return execute_sql(CREATE_LIKES_SQL)
 
-@router.post("/create-slack-channels")
-def create_slack_channels():
-    return execute_sql(CREATE_SLACK_CHANNELS_SQL)
+@router.post("/create-matches")
+def create_matches():
+    return execute_sql(CREATE_MATCHES_SQL)
+
 
 # 各テーブルの削除API
 @router.post("/drop-users")
@@ -141,13 +161,13 @@ def drop_users():
 def drop_user_attributes():
     return execute_sql(DROP_USER_ATTRIBUTES_SQL)
 
-@router.post("/drop-matching-history")
-def drop_matching_history():
-    return execute_sql(DROP_MATCHING_HISTORY_SQL)
+@router.post("/drop-likes")
+def drop_likes():
+    return execute_sql(DROP_LIKES_SQL)
 
-@router.post("/drop-slack-channels")
-def drop_slack_channels():
-    return execute_sql(DROP_SLACK_CHANNELS_SQL)
+@router.post("/drop-matches")
+def drop_matches():
+    return execute_sql(DROP_MATCHES_SQL)
 
 # 各テーブルの架空データ挿入API
 @router.post("/insert-users")
@@ -157,3 +177,7 @@ def insert_users():
 @router.post("/insert-user-attributes")
 def insert_user_attributes():
     return execute_sql(INSERT_USER_ATTRIBUTES_SQL)
+
+@router.post("/insert-likes")
+def insert_likes():
+    return execute_sql(INSERT_LIKES_SQL)

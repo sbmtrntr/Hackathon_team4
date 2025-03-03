@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from supabase_client import supabase
+import numpy as np
 
 router = APIRouter()
 
@@ -18,7 +19,6 @@ def get_matching_result(user_id: str):
 
     # すべてのユーザーとマッチ度を計算
     match_results = [calculate_match_score(target_user, other_user) for other_user in other_users]
-    print(match_results)
 
     # スコア順にソート
     match_results = sorted(match_results, key=lambda x: x["match_score"], reverse=True)
@@ -85,36 +85,20 @@ def calculate_match_score(target_user, other_user):
     if target_user["alma_mater"] == other_user["alma_mater"]:
         match_scores["alma_mater"] += 1.0    
 
-    # 趣味のマッチ度を計算(担当：shibarin)
-    target_hobbies = target_user["hobbies"].split(",")
-    other_hobbies = other_user["hobbies"].split(",")
-    for target_hobby in target_hobbies:
-        for other_hobby in other_hobbies:
-            if target_hobby == other_hobby:
-                match_scores["hobbies"] += 1.0
-    if len(target_hobbies) > 0:
-        match_scores["hobbies"] /= len(target_hobbies) # 0~1に正規化
-    
-    """
-    単語からベクトルにして類似度を計算する方法
-    from gensim.models import Word2Vec
-    model = Word2Vec.load('routes/content/ja.bin')
-    target_user_hobbies = target_user["hobbies"].split(",")
-    other_user_hobbies = other_user["hobbies"].split(",")
+    # 趣味のマッチ度を単語のベクトルで類似度を計算する(担当：shibarin)
+    target_user_hobbies = target_user["hobbies"].split(", ")
+    other_user_hobbies = other_user["hobbies"].split(", ")
 
-    hobby_similarity = 0
-    count = 0
+    hobby_vectors = np.load("hobby_vectors.npz")
     for tuh in target_user_hobbies:
+        tuh_vec = hobby_vectors[tuh]
         for ouh in other_user_hobbies:
-            if tuh in model.wv and ouh in model.wv:
-                print(tuh, ouh, model.wv.similarity(tuh, ouh))
-                hobby_similarity += model.wv.similarity(tuh, ouh)
-                count += 1
-    if count > 0:
-        hobby_similarity /= count # 0~1に正規化
+            ouh_vec = hobby_vectors[ouh]
+            # コサイン類似度を計算
+            match_scores["hobbies"] += np.dot(tuh_vec, ouh_vec) / (np.linalg.norm(tuh_vec) * np.linalg.norm(ouh_vec))
+            print(tuh, ouh, np.dot(tuh_vec, ouh_vec) / (np.linalg.norm(tuh_vec) * np.linalg.norm(ouh_vec)))
 
-    match_scores["hobbies"] += hobby_similarity
-    """
+    match_scores["hobbies"] /= 3.0
 
     # preference（重視する点）を考慮し、該当項目のスコアに重みをつける（担当：しんや）
     # 例：target_userが「hometown」を重視している場合（つまり target_user["preferences"] == hometown"）、match_scores["hometown"]に重みをつける
