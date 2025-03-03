@@ -4,5 +4,5 @@ supabase
 python-dotenv
 requests
 numpy
-scipy==1.10.1
-gensim==3.8.3
+# scipy==1.10.1
+# gensim==3.8.3

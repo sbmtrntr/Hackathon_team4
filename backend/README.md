@@ -11,6 +11,8 @@
 
 4. http://localhost:8080 でHello Worldが表示されていればOK
 
+## データベースの構成
+![alt text](image.png)
 
 ## データベース操作のAPI使用法
 - `uvicorn main:app --host localhost --port 8080 --reload`で起動させた状態で操作
