@@ -88,8 +88,7 @@ INSERT INTO users (name, email, slack_id, password_hash, created_at) VALUES
 ('島田 空', 'shimada.sora@example.com', 'U66778899', crypt('securepassword17', gen_salt('bf')), '2023-05-17'),
 ('原田 瞳', 'harada.hitomi@example.com', 'U77889900', crypt('securepassword18', gen_salt('bf')), '2023-05-18'),
 ('三浦 蓮', 'miura.ren@example.com', 'U88990011', crypt('securepassword19', gen_salt('bf')), '2023-05-19'),
-('石井 風', 'ishii.kaze@example.com', 'U99001122', crypt('securepassword20', gen_salt('bf')), '2023-05-20');
-
+('石井 風', 'ishii.kaze@example.com', 'U99001122', crypt('securepassword20', gen_salt('bf')), '2023-05-20'); -- この後に80人追加データが欲しい（担当:さやちゅう）
 """
 
 INSERT_USER_ATTRIBUTES_SQL = """
@@ -113,7 +112,7 @@ INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, mbti, alma
 ((SELECT id FROM users WHERE email = 'shimada.sora@example.com'), '映画鑑賞, ゲーム, プログラミング', '熊本県', '法人', 'SE', 'INFJ', '大阪大学', 'hometown'),
 ((SELECT id FROM users WHERE email = 'harada.hitomi@example.com'), 'キャンプ, 旅行, 読書', '山形県', '金融', '営業', 'ISTP', '一橋大学', 'mbti'),
 ((SELECT id FROM users WHERE email = 'miura.ren@example.com'), 'ランニング, 登山, 読書', '滋賀県', 'TC&S', 'コンサル', 'ENTP', '東京大学', 'alma_mater'),
-((SELECT id FROM users WHERE email = 'ishii.kaze@example.com'), '音楽, ダンス, 料理', '奈良県', '技統本', 'スタッフ', 'INTJ', '東北大学', 'mbti');
+((SELECT id FROM users WHERE email = 'ishii.kaze@example.com'), '音楽, ダンス, 料理', '奈良県', '技統本', 'スタッフ', 'INTJ', '東北大学', 'mbti'); -- この後に80人追加データが欲しい（担当:さやちゅう）
 """
 
 INSERT_LIKES_SQL = """
@@ -122,7 +121,8 @@ INSERT INTO likes (id, user_id, target_user_id, created_at) VALUES
 ('c2e58a6b-2d1f-48f6-b871-9a362b4f5d3e', 'bcc6f8ab-38cd-46b2-bd61-ac3d38546798', 'da74a3f9-79f2-44ee-b962-d031cc3886a1', '2025-03-03 12:05:00'),
 ('d3c74e9c-4b47-4d2f-bacf-61a57d3f5a9e', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', '08014313-7b76-48cc-8dd3-dfa9914d6813', '2025-03-03 12:10:00'),
 ('e4fda75d-5b92-4c83-987a-1b34e4a91b6c', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', 'b9d4b038-8f59-4502-853c-e53dbca2a015', '2025-03-03 12:15:00'),
-('f5e86b9c-3e7a-4094-bf8e-3f7b95f0e5a6', 'f209de1e-7162-4995-a6c7-f8a8a6de0dd4', '67ee4f6a-22d1-4d13-8d0d-ac7e205d9d06', '2025-03-03 12:20:00')
+('b7c4d9a8-1234-4e5c-9f34-92a67d2a4e56', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', 'bcc6f8ab-38cd-46b2-bd61-ac3d38546798', '2025-03-03 12:20:00'),
+('f5e86b9c-3e7a-4094-bf8e-3f7b95f0e5a6', 'f209de1e-7162-4995-a6c7-f8a8a6de0dd4', '67ee4f6a-22d1-4d13-8d0d-ac7e205d9d06', '2025-03-03 12:25:00');
 """
 
 # 汎用的な関数

@@ -12,3 +12,13 @@ def users():
 def user_attributes():
     response = supabase.table("user_attributes").select("*").execute()
     return response
+
+@router.get("/likes")
+def likes():
+    response = supabase.table("likes").select("*").execute()
+    return response
+
+@router.get("/matches")
+def matches():
+    response = supabase.table("matches").select("*").execute()
+    return response

@@ -5,7 +5,8 @@ from config import SLACK_BOT_TOKEN
 
 router = APIRouter()
 
-def get_slack_users():
+@router.post("/check_email")
+def check_email(email :str):
     url = "https://slack.com/api/users.list"
     headers = {
         "Authorization": f"Bearer {SLACK_BOT_TOKEN}"
@@ -17,16 +18,16 @@ def get_slack_users():
         raise Exception("Slack API Error: " + str(data))
 
     # 全ユーザのメールアドレスとSlack_IDを取得
-    user_emails = {user["profile"].get("email"): user["id"] for user in data["members"] if "email" in user["profile"]}
-        
-    return user_emails
-
-
-@router.post("/check_email")
-def check_email(email :str):
-    slack_users = get_slack_users()
+    slack_users = {user["profile"].get("email"): user["id"] for user in data["members"] if "email" in user["profile"]}
 
     if email not in slack_users:
         raise HTTPException(status_code=400, detail="このメールアドレスはSlackに登録されていません")
 
     return {"message": "登録を確認", "slack_id": slack_users[email]}
+
+
+@router.get("/connect_dm")
+def connect_dm(slack_id1 :str, slack_id2 :str):
+    # 担当(shibarin)
+
+    return {"URL": "https://slack.com/api/conversations.open的な感じで、DMを開くURLを返す"}
