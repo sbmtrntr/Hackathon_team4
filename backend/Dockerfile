@@ -13,3 +13,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # 5. UvicornでFastAPIを実行
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+# メモ：docker build -t fastapi-app .でイメージをビルド
+# メモ：docker run -d -p 8080:8080 fastapi-appでコンテナを起動
