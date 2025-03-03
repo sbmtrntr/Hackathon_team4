@@ -13,6 +13,7 @@ const Header: React.FC = () => {
   }
   return (
     <Center>
+      {/* ロゴ画像 */}
       <Image
         src='/logo-sample.png'
         h='5vh'
@@ -20,6 +21,7 @@ const Header: React.FC = () => {
         cursor={'pointer'}
         onClick={()=>router.push('/')}
       />
+      {/* 設定アイコン */}
       <IconButton
         icon={<IoSettingsOutline/>}
         fontSize={20} mt='5'
