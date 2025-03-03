@@ -13,12 +13,18 @@ const Header: React.FC = () => {
   }
   return (
     <Center>
-      <Image src='logo-sample.png' h='5vh' mt='5'/>
+      <Image
+        src='/logo-sample.png'
+        h='5vh'
+        mt='5'
+        cursor={'pointer'}
+        onClick={()=>router.push('/')}
+      />
       <IconButton
         icon={<IoSettingsOutline/>}
         fontSize={20} mt='5'
         aria-label="ユーザ設定"
-        onClick={()=>OpenSettings()}
+        onClick={OpenSettings}
       />
     </Center>
   );
