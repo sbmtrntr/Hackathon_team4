@@ -19,7 +19,8 @@ const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, v
       </InputLeftElement>
 
       {options ? (
-        <Select name={name} value={value} placeholder={placeholder} bg="white" borderRadius="md" onChange={onChange}>
+
+        <Select name={name} value={value} placeholder={placeholder} bg="white" borderRadius="md" onChange={onChange} pl="2.5rem">
           {options.map((option, index) => (
             <option key={index} value={option}>
               {option}
@@ -27,17 +28,16 @@ const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, v
           ))}
         </Select>
       ) : (
-        <Input
-          placeholder={placeholder}
-          type={type}
-          bg="white"
-          borderRadius="md"
-          name={name}
-          value={value}
-          required={required}
-          onChange={onChange}
-        />
-
+          <Input
+            placeholder={placeholder}
+            type={type}
+            bg="white"
+            borderRadius="md"
+            name={name}
+            value={value}
+            required={required}
+            onChange={onChange}
+          />
       )}
     </InputGroup>
   );

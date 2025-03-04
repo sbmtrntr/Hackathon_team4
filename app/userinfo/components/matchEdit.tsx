@@ -7,6 +7,16 @@ import { MdCategory, MdHomeWork } from "react-icons/md";
 import { BsFileEarmarkPerson } from "react-icons/bs";
 import { IoSchool } from "react-icons/io5";
 
+const MBTI_TYPES = [
+  "INTJ", "INTP", "ENTJ", "ENTP",
+  "INFJ", "INFP", "ENFJ", "ENFP",
+  "ISTJ", "ISFJ", "ESTJ", "ESFJ",
+  "ISTP", "ISFP", "ESTP", "ESFP"
+];
+
+const ASSIGNMENT_TYPES = [
+  "公共", "金融", "法人", "TC&S","技統本"
+];
 
 const MatchEdit: React.FC = () => {
   const [formData, setFormData] = useState({
