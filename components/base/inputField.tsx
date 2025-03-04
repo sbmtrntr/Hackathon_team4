@@ -1,4 +1,4 @@
-import React, {ReactNode} from "react";
+import React from "react";
 import { Input, InputGroup, InputLeftElement, Icon } from "@chakra-ui/react";
 
 type InputFieldProps = {
