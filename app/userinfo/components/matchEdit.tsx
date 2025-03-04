@@ -41,11 +41,11 @@ const MatchEdit: React.FC = () => {
   return (
     <Center>
       <VStack spacing={5}>
-        <InputField icon={FaLocationDot} placeholder="出身地" name="hometown" type="text" value={formData.hometown} onChange={handleChange} required />
-        <InputField icon={MdCategory} placeholder="志望分野" name="field" type="text" value={formData.field} onChange={handleChange} required/>
-        <InputField icon={MdHomeWork} placeholder="志望職種" name="occupation" type="text" value={formData.occupation} onChange={handleChange} required/>
-        <InputField icon={BsFileEarmarkPerson} placeholder="MBTI" name="mbti" type="text" value={formData.mbti} onChange={handleChange} required/>
-        <InputField icon={IoSchool} placeholder="出身大学" name="university" type="text" value={formData.university} onChange={handleChange} required/>
+        <InputField icon={FaLocationDot} placeholder="出身地" name="hometown" type="text" value={formData.hometown} onChange={handleChange} required={true} />
+        <InputField icon={MdCategory} placeholder="志望分野" name="field" type="text" value={formData.field} onChange={handleChange} required={true}/>
+        <InputField icon={MdHomeWork} placeholder="志望職種" name="occupation" type="text" value={formData.occupation} onChange={handleChange} required={true} />
+        <InputField icon={BsFileEarmarkPerson} placeholder="MBTI" name="mbti" type="text" value={formData.mbti} onChange={handleChange} required={true} />
+        <InputField icon={IoSchool} placeholder="出身大学" name="university" type="text" value={formData.university} onChange={handleChange} required={true} />
 
         <Button bg="#FF9800" textColor='white' onClick={handleSubmit}>
           登録
