@@ -20,7 +20,7 @@ const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, v
 
       {options ? (
 
-        <Select name={name} value={value} placeholder={placeholder} bg="white" borderRadius="md" onChange={onChange} pl="2.5rem">
+        <Select name={name} value={value} placeholder={placeholder} bg="white" borderRadius="md" onChange={onChange} pl="2.5rem" required={required}>
           {options.map((option, index) => (
             <option key={index} value={option}>
               {option}
