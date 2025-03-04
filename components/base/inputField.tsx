@@ -11,7 +11,7 @@ type InputFieldProps = {
   required?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
-const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, value, options, required, onChange}) => {
+const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, value, options, required = false, onChange}) => {
   return (
     <InputGroup>
       <InputLeftElement pointerEvents="none">
