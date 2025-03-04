@@ -22,8 +22,9 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     setMessage("");
     try {
-      const response = await axios.get(`http://localhost:8080/check_email?email=${encodeURIComponent(email)}`);
+      const response = await axios.post(`http://localhost:8080/check_email`);
       setMessage(response.data.message);
+      setEmail(response.data.slack_id);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setMessage(error.response?.data?.detail || "エラーが発生しました");
@@ -53,7 +54,7 @@ export default function LoginPage() {
             <VStack spacing={1}>
               <Heading size="lg" textAlign="center" color="gray.700">ログイン</Heading>
               <Text color="gray.500" textAlign="center">
-                アカウントにログインして、同期社会人とつながりましょう
+                アカウントにログインして、同期とつながりましょう
               </Text>
             </VStack>
           </CardHeader>
@@ -109,7 +110,7 @@ export default function LoginPage() {
                   </Box>
                 </Link>
               </Text>
-              <Link href="/forgot-password" passHref>
+              <Link href="/forgot_password" passHref>
                 <Box as="span" fontSize="sm" color="gray.500" _hover={{ textDecoration: 'underline' }}>
                   パスワードをお忘れですか？
                 </Box>

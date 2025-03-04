@@ -1,9 +1,7 @@
 'use client';
 
-import { Providers } from './providers';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { Inter } from 'next/font/google';
-import type { Metadata } from 'next';
 import Header from '@/components/header';
 
 const inter = Inter({ subsets: ['latin'] });
