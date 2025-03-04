@@ -8,10 +8,10 @@ type InputFieldProps = {
   type: string;
   value?: string;
   options?: string[];
-  // required?: boolean;
+  required?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
-const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, value, options, onChange}) => {
+const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, value, options, required = false, onChange}) => {
   return (
     <InputGroup>
       <InputLeftElement pointerEvents="none">
@@ -20,7 +20,7 @@ const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, v
 
       {options ? (
 
-        <Select name={name} value={value} placeholder={placeholder} bg="white" borderRadius="md" onChange={onChange} pl="2.5rem">
+        <Select name={name} value={value} placeholder={placeholder} bg="white" borderRadius="md" onChange={onChange} pl="2.5rem" required={required}>
           {options.map((option, index) => (
             <option key={index} value={option}>
               {option}
@@ -35,7 +35,7 @@ const InputField: React.FC<InputFieldProps> = ({icon, placeholder, name, type, v
             borderRadius="md"
             name={name}
             value={value}
-            // required={required}
+            required={required}
             onChange={onChange}
           />
       )}
