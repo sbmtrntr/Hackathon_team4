@@ -66,7 +66,9 @@
 // export default Result;
 
 import {
-  Center, VStack, Box, Heading, Text, List, ListItem, ListIcon, Button, Badge
+  Center, VStack, Box, Heading, Text, List, ListItem, ListIcon, Button, Badge,
+  Wrap,
+  WrapItem
 } from "@chakra-ui/react";
 
 const users = [
@@ -180,7 +182,16 @@ export default function MatchingResult() {
                   <Text>🏢 志望分野:{user.field}</Text>
                   <Text>💼 志望役割: {user.role}</Text>
                   <Text>🎓 出身大学: {user.alma_mater}</Text>
-                  <Text>🎨 趣味: {user.hobbies}</Text>
+                  <Text fontWeight="bold" mt={2}>🎨 趣味</Text>
+                  <Wrap mt={1}>
+                    {user.hobbies.split(", ").map((hobby, index) => (
+                      <WrapItem key={index}>
+                        <Badge colorScheme="blue" px={2} py={1} borderRadius="md">
+                          {hobby}
+                        </Badge>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
 
                   {/* <Badge colorScheme="blue" mt={2} fontSize="sm">
                     優先表示: {user.preferences === "hometown" ? `🏠 ${user.hometown}`
