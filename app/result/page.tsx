@@ -177,8 +177,8 @@ export default function MatchingResult() {
                 <Box fontSize="md" color="gray.600" pl={6} textAlign="left">
                   <Text>🎭 MBTI:{user.mbti}</Text>
                   <Text>🏠 出身地: {user.hometown}</Text>
-                  <Text>🏢 分野:{user.field}</Text>
-                  <Text>💼 役割: {user.role}</Text>
+                  <Text>🏢 志望分野:{user.field}</Text>
+                  <Text>💼 志望役割: {user.role}</Text>
                   <Text>🎓 出身大学: {user.alma_mater}</Text>
                   <Text>🎨 趣味: {user.hobbies}</Text>
 
