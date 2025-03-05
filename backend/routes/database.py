@@ -69,18 +69,18 @@ DROP_MATCHES_SQL = "DROP TABLE IF EXISTS matches CASCADE;"
 # 各テーブルの架空データ挿入クエリ
 INSERT_USERS_SQL = """
 INSERT INTO users (name, email, slack_id, password_hash, created_at) VALUES
-('田中 太郎', 'tanaka.taro@example.com', 'U12345678', crypt('securepassword1', gen_salt('bf')), '2023-05-01'),
+('田中 太郎', 'tanaka.taro@example.com', 'U12355678', crypt('securepassword1', gen_salt('bf')), '2023-05-01'),
 ('佐藤 花子', 'sato.hanako@example.com', 'U87654321', crypt('securepassword2', gen_salt('bf')), '2023-05-02'),
-('鈴木 一郎', 'suzuki.ichiro@example.com', 'U23456789', crypt('securepassword3', gen_salt('bf')), '2023-05-03'),
-('高橋 次郎', 'takahashi.jiro@example.com', 'U34567890', crypt('securepassword4', gen_salt('bf')), '2023-05-04'),
-('井上 美咲', 'inoue.misaki@example.com', 'U45678901', crypt('securepassword5', gen_salt('bf')), '2023-05-05'),
-('山本 健太', 'yamamoto.kenta@example.com', 'U56789012', crypt('securepassword6', gen_salt('bf')), '2023-05-06'),
-('中村 桃子', 'nakamura.momoko@example.com', 'U67890123', crypt('securepassword7', gen_salt('bf')), '2023-05-07'),
-('小林 太一', 'kobayashi.taichi@example.com', 'U78901234', crypt('securepassword8', gen_salt('bf')), '2023-05-08'),
-('加藤 春菜', 'kato.haruna@example.com', 'U89012345', crypt('securepassword9', gen_salt('bf')), '2023-05-09'),
-('吉田 和夫', 'yoshida.kazu@example.com', 'U90123456', crypt('securepassword10', gen_salt('bf')), '2023-05-10'),
-('山田 涼太', 'yamada.ryota@example.com', 'U01234567', crypt('securepassword11', gen_salt('bf')), '2023-05-11'),
-('佐々木 美咲', 'sasaki.misaki@example.com', 'U12345678', crypt('securepassword12', gen_salt('bf')), '2023-05-12'),
+('鈴木 一郎', 'suzuki.ichiro@example.com', 'U25456789', crypt('securepassword3', gen_salt('bf')), '2023-05-03'),
+('高橋 次郎', 'takahashi.jiro@example.com', 'U54567890', crypt('securepassword4', gen_salt('bf')), '2023-05-04'),
+('井上 美咲', 'inoue.misaki@example.com', 'U45578901', crypt('securepassword5', gen_salt('bf')), '2023-05-05'),
+('山本 健太', 'yamamoto.kenta@example.com', 'U55789012', crypt('securepassword6', gen_salt('bf')), '2023-05-06'),
+('中村 桃子', 'nakamura.momoko@example.com', 'U57890123', crypt('securepassword7', gen_salt('bf')), '2023-05-07'),
+('小林 太一', 'kobayashi.taichi@example.com', 'U58901234', crypt('securepassword8', gen_salt('bf')), '2023-05-08'),
+('加藤 春菜', 'kato.haruna@example.com', 'U89012545', crypt('securepassword9', gen_salt('bf')), '2023-05-09'),
+('吉田 和夫', 'yoshida.kazu@example.com', 'U90125456', crypt('securepassword10', gen_salt('bf')), '2023-05-10'),
+('山田 涼太', 'yamada.ryota@example.com', 'U01235567', crypt('securepassword11', gen_salt('bf')), '2023-05-11'),
+('佐々木 美咲', 'sasaki.misaki@example.com', 'U15345678', crypt('securepassword12', gen_salt('bf')), '2023-05-12'),
 ('森田 拓也', 'morita.takuya@example.com', 'U23456789', crypt('securepassword13', gen_salt('bf')), '2023-05-13'),
 ('大島 結衣', 'oshima.yui@example.com', 'U34567890', crypt('securepassword14', gen_salt('bf')), '2023-05-14'),
 ('松本 裕樹', 'matsumoto.yuki@example.com', 'U45678901', crypt('securepassword15', gen_salt('bf')), '2023-05-15'),
@@ -277,12 +277,9 @@ INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, mbti, alma
 
 INSERT_LIKES_SQL = """
 INSERT INTO likes (id, user_id, target_user_id, created_at) VALUES
-('b1f94672-4c23-4a8e-b5c5-61b4f3f5e7a1', 'bcc6f8ab-38cd-46b2-bd61-ac3d38546798', 'bfbc7642-091b-4d98-bce8-07aa4a7516e3', '2025-03-03 12:00:00'),
-('c2e58a6b-2d1f-48f6-b871-9a362b4f5d3e', 'bcc6f8ab-38cd-46b2-bd61-ac3d38546798', 'da74a3f9-79f2-44ee-b962-d031cc3886a1', '2025-03-03 12:05:00'),
-('d3c74e9c-4b47-4d2f-bacf-61a57d3f5a9e', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', '08014313-7b76-48cc-8dd3-dfa9914d6813', '2025-03-03 12:10:00'),
-('e4fda75d-5b92-4c83-987a-1b34e4a91b6c', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', 'b9d4b038-8f59-4502-853c-e53dbca2a015', '2025-03-03 12:15:00'),
-('b7c4d9a8-1234-4e5c-9f34-92a67d2a4e56', '5c1399ce-5d64-4b9e-a93d-1139fceaf86c', 'bcc6f8ab-38cd-46b2-bd61-ac3d38546798', '2025-03-03 12:20:00'),
-('f5e86b9c-3e7a-4094-bf8e-3f7b95f0e5a6', 'f209de1e-7162-4995-a6c7-f8a8a6de0dd4', '67ee4f6a-22d1-4d13-8d0d-ac7e205d9d06', '2025-03-03 12:25:00');
+('b1f94672-4c23-4a8e-b5c5-61b4f3f5e7a1', (SELECT id FROM users WHERE email = 'tanaka.taro@example.com'), (SELECT id FROM users WHERE email = 'sato.hanako@example.com'), '2025-03-03 12:00:00'),
+('c2e58a6b-2d1f-48f6-b871-9a362b4f5d3e', (SELECT id FROM users WHERE email = 'sato.hanako@example.com'), (SELECT id FROM users WHERE email = 'tanaka.taro@example.com'), '2025-03-03 12:05:00'),
+('d3c74e9c-4b47-4d2f-bacf-61a57d3f5a9e', (SELECT id FROM users WHERE email = 'sato.hanako@example.com'), (SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), '2025-03-03 12:10:00');
 """
 
 # 汎用的な関数
