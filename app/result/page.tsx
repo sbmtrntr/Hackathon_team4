@@ -1,13 +1,17 @@
 "use client";
-
+import React, { useState } from "react";
 import {
   Center, VStack, Box, Heading, Text, List, ListItem, ListIcon, Button, Badge,
+  Icon,
   Wrap,
   WrapItem
 } from "@chakra-ui/react";
 
+import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai'
+
 const users = [
   {
+    user_id: "1",
     name: "ユーザーA",
     hobbies: "読書, 旅行, 映画鑑賞",
     hometown: "東京都",
@@ -18,6 +22,7 @@ const users = [
     preferences: "hometown"
   },
   {
+    user_id: "2",
     name: "ユーザーB",
     hobbies: "料理, 登山, 音楽",
     hometown: "大阪府",
@@ -28,6 +33,7 @@ const users = [
     preferences: "field"
   },
   {
+    user_id: "3",
     name: "ユーザーC",
     hobbies: "ゲーム, プログラミング, 筋トレ",
     hometown: "福岡県",
@@ -38,6 +44,7 @@ const users = [
     preferences: "mbti"
   },
   {
+    user_id: "4",
     name: "ユーザーD",
     hobbies: "ランニング, スポーツ観戦, 写真",
     hometown: "北海道",
@@ -48,6 +55,7 @@ const users = [
     preferences: "alma_mater"
   },
   {
+    user_id: "5",
     name: "ユーザーE",
     hobbies: "読書, カフェ巡り, ガーデニング",
     hometown: "愛知県",
@@ -60,9 +68,15 @@ const users = [
 ];
 
 export default function MatchingResult() {
-  const handleClick = (userName: string) => {
-    alert(`${userName} と Slack で話すボタンが押されました！`);
+  const [likes, setLikes] = useState<{ [key: string]: boolean }>({});
+  const toggleLike = (userId: string) => {
+    setLikes((prevLikes) => ({
+      ...prevLikes,
+      [userId]: !prevLikes[userId]
+    }));
+    // ここでlikeの状態を更新するapiを叩きます
   };
+
 
   return (
     <Center mt={10}>
@@ -97,19 +111,27 @@ export default function MatchingResult() {
                 alignItems="start"
                 gap={2}
               >
-                <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
-                  <Text>
-                    {user.name}
-                  </Text>
-                  <Button
-                    onClick={() => handleClick(user.name)}
-                    textColor="white"
-                    bg="#235180"
-                    size="sm"
-                  >
-                    Slackで話す
-                  </Button>
-                </Box>
+              <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
+                <Text>{user.name}</Text>
+
+                <Button
+                  onClick={() => toggleLike(user.user_id)}
+                  textColor="white"
+                  bg="#FF9800"
+                  size="sm"
+                  _hover={{ bg: "#FF9800", transform: "scale(1.05)" }}
+                  leftIcon={
+                    <Icon
+                      as={likes[user.user_id] ? AiFillHeart : AiOutlineHeart}
+                      fontSize="16px"
+                      color={likes[user.user_id] ? 'red.400' : 'gray.500'}
+                    />
+                  }
+                >
+                  {likes[user.user_id] ? "いいね済" : "いいね"}
+                </Button>
+              </Box>
+
 
                 <Box fontSize="md" color="gray.600" pl={6} textAlign="left">
                   <Text>🎭 MBTI:{user.mbti}</Text>
