@@ -1,35 +1,25 @@
-import os
-from supabase import Client, create_client
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-# ローカル環境なら .env.local を読み込む
-if os.getenv("GAE_ENV") is None:  # Cloud Run 環境では GAE_ENV が設定される
-    load_dotenv("../.env.local")
-
-URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-KEY = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-
-supabase: Client = create_client(URL, KEY)
+from routes import root, users, database, matching, slack
 
 app = FastAPI()
 
-# CORS 設定を追加
+# CORS 設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # すべてのオリジンを許可（必要なら適宜変更）
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # すべての HTTP メソッドを許可
-    allow_headers=["*"],  # すべてのヘッダーを許可
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+# ルーターを追加
+app.include_router(root.router) # ルートに接続した時（いらない）
+app.include_router(users.router) # データベースに登録されているユーザー情報を取得
+app.include_router(database.router) # データベースに関する操作
+app.include_router(matching.router) # マッチングに関する操作
+app.include_router(slack.router) # Slack に関する操作
 
-
-@app.get("/user_name")
-def read_user_name():
-    response = supabase.table("users").select("name").execute()
-    return response
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8080)
