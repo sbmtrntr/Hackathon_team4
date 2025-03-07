@@ -5,8 +5,8 @@ from config import SLACK_BOT_TOKEN
 
 router = APIRouter()
 
-@router.post("/check_email")
-def check_email(email :str):
+@router.get("/check_email")
+def check_email(email: str):
     url = "https://slack.com/api/users.list"
     headers = {
         "Authorization": f"Bearer {SLACK_BOT_TOKEN}"
@@ -15,7 +15,7 @@ def check_email(email :str):
     data = response.json()
 
     if not data.get("ok"):
-        raise Exception("Slack API Error: " + str(data))
+        raise HTTPException(status_code=500, detail="Slack API Error: " + str(data))
 
     # 全ユーザのメールアドレスとSlack_IDを取得
     slack_users = {user["profile"].get("email"): user["id"] for user in data["members"] if "email" in user["profile"]}
