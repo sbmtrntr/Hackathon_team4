@@ -1,74 +1,69 @@
 'use client';
 
-import { useState } from 'react';
-import {Box,Button,
-  Card,CardBody,CardFooter,CardHeader,
-  Center,FormControl,FormLabel,
-  Heading,
-  Input,InputGroup,InputLeftElement,
-  Stack,Text,VStack,
-} from '@chakra-ui/react';
+import { useState, Suspense } from 'react';
+import { Box, Button, Card, CardBody, CardFooter, CardHeader, Center, FormControl, FormLabel, Heading, Input, InputGroup, InputLeftElement, Stack, Text, VStack } from '@chakra-ui/react';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import axios from "axios";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
+
+// Supabase クライアントの作成
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function CheckEmail() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [userId, setUserId] = useState("");
   const router = useRouter();
 
-  const handleLogin = async (e:React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
-    setUserId("");
+
     try {
-      const response = await axios.post(`http://localhost:8080/check_email?email=${email}`);
-      setMessage(response.data.message);
-      //if (response.data.message === "登録を確認") {
-        // Slack に登録されている場合、データベースを確認
-      const usersResponse = await axios.get("http://localhost:8080/users");
-      const users: Array<{ id: string, email: string }> = usersResponse.data.data;
-      const user = users.find((user: { email: string }) => user.email === email);
-      if (user) {
-        setUserId(user.id);
-        const queryString = new URLSearchParams({ userId: user.id }).toString();
-        router.push(`/dashboard?${queryString}`);
-      } else {
-        alert("メールアドレスが確認できなかったため，新規登録画面に移行します．");
-        router.push("/register");
+      // 🔹 Supabase からユーザー情報を取得
+      const { data: users, error } = await supabase
+        .from("users")
+        .select("id, email, password_hash")
+        .eq("email", email)
+        .single(); // 1件だけ取得
+
+      if (error || !users) {
+        setMessage("メールアドレスが間違っているか，登録されていません．");
+        //alert("メールアドレスまたはパスワードが違います．");
+        //router.push("/register");
+        setEmail("");
+        setPassword("");
+        return;
       }
-      
+
+      // 🔹 入力パスワードとハッシュを比較
+      //const isMatch = await bcrypt.compare(password, users.password_hash);
+      //if (!isMatch) {
+      //  setMessage("パスワードが正しくありません");
+      //  return;
+      //}
+
+      // 🔹 ログイン成功 → ダッシュボードへ遷移
+      const queryString = new URLSearchParams({ userId: users.id }).toString();
+      router.push(`/matching?${queryString}`);
+
     } catch (error) {
-      let errorMessage = "エラーが発生しました";
-      if (axios.isAxiosError(error)) {
-        errorMessage = error.response?.data?.detail || errorMessage;
-      } else {
-        errorMessage = "予期しないエラーが発生しました";
-      }
-      setMessage(errorMessage);
-      alert(errorMessage);
+      console.error("ログインエラー:", error);
+      setMessage("エラーが発生しました");
+      alert("ログインに失敗しました");
     }
   };
 
   return (
-    <Box
-      minH="100vw"
-      bg="white"
-      py={8}
-      px={4}
-    >
+    <Box minH="100vw" bg="white" py={8} px={4}>
+      <Suspense>
       <Center>
-        <Card
-          w="full"
-          maxW="md"
-          borderRadius="lg"
-          boxShadow="sm"
-          borderWidth="1px"
-          borderColor="gray.100"
-        >
+        <Card w="full" maxW="md" borderRadius="lg" boxShadow="sm" borderWidth="1px" borderColor="gray.100">
           <CardHeader pb={0}>
             <VStack spacing={1}>
               <Heading size="lg" textAlign="center" color="gray.700">ログイン</Heading>
@@ -115,6 +110,8 @@ export default function CheckEmail() {
                 <Button type="submit" w="full" mt={2} bg="brand.500" _hover={{ bg: 'brand.600' }}>
                   ログイン
                 </Button>
+
+                {message && <Text color="red.500" fontSize="sm">{message}</Text>}
               </VStack>
             </form>
           </CardBody>
@@ -138,6 +135,7 @@ export default function CheckEmail() {
           </CardFooter>
         </Card>
       </Center>
+      </Suspense>
     </Box>
   );
 }

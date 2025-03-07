@@ -1,16 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import {Box,Button,Card,CardBody,Center,Container,Flex,Heading,SimpleGrid,Text,
-  useColorModeValue,VStack,Tag,TagLabel,TagCloseButton,Wrap,WrapItem,Select,
-  FormControl,FormLabel,Input,Checkbox,CheckboxGroup,Stack,Tabs,TabList,
-  TabPanels,Tab,TabPanel,Divider,
+import { useState, Suspense } from 'react';
+import {
+  Box, Button, Card, CardBody, Center, Container, Flex, Heading, SimpleGrid, Text,
+  useColorModeValue, VStack, Tag, TagLabel, TagCloseButton, Wrap, WrapItem, Select,
+  FormControl, FormLabel, Input, Checkbox, Divider, Tabs, TabList, TabPanels, Tab, TabPanel
 } from '@chakra-ui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaMapMarkerAlt, FaGraduationCap, FaBriefcase, 
-  FaUserAlt, FaUniversity,FaHeart
-} from 'react-icons/fa';
+import { FaMapMarkerAlt, FaGraduationCap, FaBriefcase, FaUserAlt, FaUniversity, FaHeart } from 'react-icons/fa';
 import axios from "axios";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // 選択可能な項目の定義
 const matchingCriteria = [
@@ -56,7 +60,20 @@ const mbtiOptions = [
   'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ'
 ];
 
+// ページ全体を Suspense でラップする
 export default function MatchingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MatchingPageContent />
+    </Suspense>
+  );
+}
+
+function MatchingPageContent() {
+  // useSearchParams をここで呼び出す
+  const params = useSearchParams();
+  const userId = params.get('userId');
+
   const [selectedCriteria, setSelectedCriteria] = useState<string[]>([]);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [hometown, setHometown] = useState<string>('');
@@ -72,11 +89,7 @@ export default function MatchingPage() {
   const selectedBg = useColorModeValue('brand.50', 'brand.900');
   const selectedBorder = useColorModeValue('brand.500', 'brand.200');
   const tagColorScheme = 'brand';
-  //Vercelがエラー吐くので一旦コメントアウト
-  // データを受け取った後にAPIに渡したい.
-  //const params = useSearchParams();
-  // データをlogin から受け渡し
-  //const [userdata, setUserData] = useState(params.getAll(""));
+
   // 項目の選択/選択解除を処理する関数
   const toggleCriterion = (criterionId: string) => {
     setSelectedCriteria(prev => 
@@ -111,15 +124,14 @@ export default function MatchingPage() {
 
   // マッチング結果画面に遷移する関数
   const handleFindMatches = async (e: React.FormEvent) => {
-    // 選択された条件をクエリパラメータとして渡す
+    e.preventDefault();
+    
     const queryParams = new URLSearchParams();
     
-    // 選択された条件を追加
     selectedCriteria.forEach(criterion => {
       queryParams.append('criteria', criterion);
     });
     
-    // 各属性の値を追加
     if (selectedHobbies.length > 0) {
       selectedHobbies.forEach(hobby => {
         queryParams.append('hobbies', hobby);
@@ -132,30 +144,34 @@ export default function MatchingPage() {
     if (mbti) queryParams.append('mbti', mbti);
     if (almaMater) queryParams.append('alma_mater', almaMater);
     
-    // 重視する項目を追加
     preferences.forEach(pref => {
       queryParams.append('preferences', pref);
     });
-    //APIを叩いて呼ぶ
-    const response = axios.get(`http://localhost:8080/matching_result?user_id=61ecfa1e-6208-4093-ab93-9318f137b0ad`); 
-    router.push(`/matching/results?${queryParams.toString()}`);
+    
+    // API 呼び出し例（エラーハンドリングも追加）
+    try {
+      const response = await axios.get(`http://localhost:8080/matching_result?user_id=${userId}`); 
+      const userIds = response.data.matches
+        .map((match: any) => match.user_id)
+        .join('&user_ids=');
+      router.push(`/result?user_ids=${userIds}`);
+    } catch (error) {
+      console.error('Error fetching matching results:', error);
+    }
   };
 
-  // 次のタブに進む
   const nextTab = () => {
     if (activeTab < 1) {
       setActiveTab(activeTab + 1);
     }
   };
 
-  // 前のタブに戻る
   const prevTab = () => {
     if (activeTab > 0) {
       setActiveTab(activeTab - 1);
     }
   };
 
-  // 入力が完了しているかチェック
   const isProfileComplete = () => {
     let isComplete = true;
     
@@ -187,21 +203,11 @@ export default function MatchingPage() {
   };
 
   return (
-    <Box
-      minH="100vh"
-      bg="white"
-      py={8}
-      px={4}
-    >
+    <Box minH="100vh" bg="white" py={8} px={4}>
       <Container maxW="container.lg">
         <VStack spacing={8} align="stretch">
           <Box textAlign="center">
-            <Heading
-              as="h1"
-              size="xl"
-              mb={2}
-              color="brand.500"
-            >
+            <Heading as="h1" size="xl" mb={2} color="brand.500">
               マッチング条件を選択
             </Heading>
             <Text color="gray.600" fontSize="lg">
@@ -248,7 +254,9 @@ export default function MatchingPage() {
                             >
                               <Box as={criterion.icon} size="24px" />
                             </Center>
-                            <Heading size="md" textAlign="center" color="gray.700">{criterion.name}</Heading>
+                            <Heading size="md" textAlign="center" color="gray.700">
+                              {criterion.name}
+                            </Heading>
                             <Text color="gray.600" fontSize="sm" textAlign="center">
                               {criterion.description}
                             </Text>
