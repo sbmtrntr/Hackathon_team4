@@ -8,35 +8,54 @@ import {Box,Button,
   Input,InputGroup,InputLeftElement,
   Stack,Text,VStack,
 } from '@chakra-ui/react';
-import { FaEnvelope, FaGithub, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from "axios";
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function CheckEmail() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [userId, setUserId] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e:React.FormEvent) => {
+    e.preventDefault();
     setMessage("");
+    setUserId("");
     try {
-      const response = await axios.post(`http://localhost:8080/check_email`);
+      const response = await axios.post(`http://localhost:8080/check_email?email=${email}`);
       setMessage(response.data.message);
-      setEmail(response.data.slack_id);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setMessage(error.response?.data?.detail || "エラーが発生しました");
+      //if (response.data.message === "登録を確認") {
+        // Slack に登録されている場合、データベースを確認
+      const usersResponse = await axios.get("http://localhost:8080/users");
+      const users: Array<{ id: string, email: string }> = usersResponse.data.data;
+      const user = users.find((user: { email: string }) => user.email === email);
+      if (user) {
+        setUserId(user.id);
+        const queryString = new URLSearchParams({ userId: user.id }).toString();
+        router.push(`/dashboard?${queryString}`);
       } else {
-        setMessage("予期しないエラーが発生しました");
+        alert("メールアドレスが確認できなかったため，新規登録画面に移行します．");
+        router.push("/register");
       }
+      
+    } catch (error) {
+      let errorMessage = "エラーが発生しました";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.detail || errorMessage;
+      } else {
+        errorMessage = "予期しないエラーが発生しました";
+      }
+      setMessage(errorMessage);
+      alert(errorMessage);
     }
   };
 
   return (
     <Box
-      minH="100vh"
+      minH="100vw"
       bg="white"
       py={8}
       px={4}
@@ -60,7 +79,7 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardBody>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleLogin}>
               <VStack spacing={4}>
                 <FormControl isRequired>
                   <FormLabel htmlFor="email">メールアドレス</FormLabel>
