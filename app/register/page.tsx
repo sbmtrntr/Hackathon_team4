@@ -21,6 +21,7 @@ import { Users } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from "axios";
 
 const MBTI_TYPES = [
   "INTJ", "INTP", "ENTJ", "ENTP",
@@ -45,10 +46,13 @@ export default function RegisterPage() {
   const router = useRouter();
   const bgColor = useColorModeValue('white', 'gray.700');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    //APIを叩いてユーザー情報登録したい．
+    const response = await axios.get(`http://localhost:8080/users`);
     console.log(formData);
-    router.push("/dashboard");
+    alert("ユーザープロフィールを作成しました．");
+    router.push("/login");
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -57,7 +61,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Box minH="100vh" py={12} px={4} bg="gray.50">
+    <Box minH="100vw" py={12} px={4} bg="gray.50">
       <Container maxW="md">
         <Card bg={bgColor} shadow="xl" borderRadius="xl">
           <CardHeader>
