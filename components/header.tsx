@@ -1,12 +1,12 @@
 'use client';
 import React from "react";
 import {
-  Center, Image, Icon,
+  Center, Image,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  Button
+  IconButton
 } from "@chakra-ui/react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useRouter } from "next/navigation";
@@ -14,9 +14,9 @@ import { useRouter } from "next/navigation";
 const Header: React.FC = () => {
   const router = useRouter();
 
-  const OpenSettings = () => {
-    console.log('OpenSettings');
-    router.push('/userinfo');
+  const movePage = (path: string) => {
+    console.log(`${path}に移動したよ`);
+    router.push(path);
   }
   return (
     <Center>
@@ -30,14 +30,10 @@ const Header: React.FC = () => {
       />
       {/* 設定アイコン */}
       <Menu>
-        <MenuButton as={Button}>
-          <Icon scale="1.5">
-            <GiHamburgerMenu />
-          </Icon>
-        </MenuButton>
+        <MenuButton as={IconButton} aria-label="Options" icon={<GiHamburgerMenu />} variant="outline" mt='5' />
         <MenuList>
-          <MenuItem>いいねしたユーザ</MenuItem>
-          <MenuItem>情報編集</MenuItem>
+          <MenuItem onClick={() => movePage("/likes")}>いいねしたユーザ</MenuItem>
+          <MenuItem onClick={() => movePage("/userinfo")}>情報編集</MenuItem>
         </MenuList>
       </Menu>
     </Center>
