@@ -72,9 +72,11 @@ export default function MatchingPage() {
   const selectedBg = useColorModeValue('brand.50', 'brand.900');
   const selectedBorder = useColorModeValue('brand.500', 'brand.200');
   const tagColorScheme = 'brand';
-  const params = useSearchParams();
+  //Vercelがエラー吐くので一旦コメントアウト
+  // データを受け取った後にAPIに渡したい.
+  //const params = useSearchParams();
   // データをlogin から受け渡し
-  const [userdata, setUserData] = useState(params.getAll(""));
+  //const [userdata, setUserData] = useState(params.getAll(""));
   // 項目の選択/選択解除を処理する関数
   const toggleCriterion = (criterionId: string) => {
     setSelectedCriteria(prev => 
@@ -134,7 +136,7 @@ export default function MatchingPage() {
     preferences.forEach(pref => {
       queryParams.append('preferences', pref);
     });
-    
+    //APIを叩いて呼ぶ
     const response = axios.get(`http://localhost:8080/matching_result?user_id=61ecfa1e-6208-4093-ab93-9318f137b0ad`); 
     router.push(`/matching/results?${queryParams.toString()}`);
   };
