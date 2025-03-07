@@ -4,78 +4,132 @@ import {
   Box,
   Button,
   Container,
+  FormControl,
+  FormLabel,
   Heading,
+  Input,
+  Stack,
   Text,
   VStack,
-  SimpleGrid,
+  useColorModeValue,
   Card,
-  CardHeader,
   CardBody,
+  CardHeader,
+  InputGroup,
+  InputLeftElement
 } from '@chakra-ui/react';
-import { ArrowRight, Users } from 'lucide-react';
-import Link from 'next/link';
+import { FaRegUser } from "react-icons/fa";
+import { CiMail } from "react-icons/ci";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function Home() {
+export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    emailConfirm: "",
+  });
+
+  const router = useRouter();
+  const bgColor = useColorModeValue('white', 'gray.700');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.email !== formData.emailConfirm) {
+      alert("メールアドレスが一致しません");
+      return;
+    }
+    console.log(formData);
+    router.push("/dashboard");
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
-    <Box minH="100vh" bg="gray.50">
-      <Container maxW="container.xl" py={16}>
-        <VStack spacing={8} textAlign="center">
-          <Box display="flex" alignItems="center">
-            <Box as={Users} boxSize={12} color="blue.500" />
-            <Heading ml={2} size="2xl">内定者マッチング</Heading>
-          </Box>
-          
-          <Text fontSize="xl" color="gray.600" maxW="2xl">
-            まだ見ぬ友人たちに会いに行こう．
-          </Text>
+    <Box minH="100vh" py={12} px={4} bg="gray.50">
+      <Container maxW="md">
+        <Card bg={bgColor} shadow="xl" borderRadius="xl">
+          <CardHeader>
+            <VStack spacing={4}>
+              <Heading size="lg">内定者マッチング</Heading>
+              <Heading size="md" textAlign="center">アカウント作成</Heading>
+              <Text color="gray.500" textAlign="center">
+                あなたのプロフィールを教えてください
+              </Text>
+            </VStack>
+          </CardHeader>
 
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8} w="full" maxW="5xl" mt={12}>
-            <Card>
-              <CardHeader>
-                <Heading size="md">Join Today</Heading>
-              </CardHeader>
-              <CardBody>
-                <Text color="gray.600">
-                  プロフィールを作成して，同じ趣味や高め合える友人との繋がりを作りましょう(*^^*)
+          <CardBody>
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={4}>
+                {/* ユーザー名 */}
+                <FormControl isRequired>
+                  <FormLabel>ユーザー名</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <FaRegUser color="gray" />
+                    </InputLeftElement>
+                    <Input
+                      name="name"
+                      placeholder="Data 太郎"
+                      value={formData.name}
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </FormControl>
+
+                {/* メールアドレス */}
+                <FormControl isRequired>
+                  <FormLabel>メールアドレス</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <CiMail color="gray" />
+                    </InputLeftElement>
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </FormControl>
+
+                {/* メールアドレス確認 */}
+                <FormControl isRequired>
+                  <FormLabel>メールアドレス（確認）</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <CiMail color="gray" />
+                    </InputLeftElement>
+                    <Input
+                      name="emailConfirm"
+                      type="email"
+                      placeholder="m@example.com"
+                      value={formData.emailConfirm}
+                      onChange={handleChange}
+                    />
+                  </InputGroup>
+                </FormControl>
+
+                {/* 送信ボタン */}
+                <Button type="submit" colorScheme="blue" size="lg" w="full">
+                  Create Account
+                </Button>
+
+                <Text textAlign="center" fontSize="sm" color="gray.500">
+                  すでにアカウントをお持ちですか？{" "}
+                  <Text as="span" color="blue.500" cursor="pointer" onClick={() => router.push('/login')}>
+                    ログイン
+                  </Text>
                 </Text>
-              </CardBody>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Heading size="md">Smart Matching</Heading>
-              </CardHeader>
-              <CardBody>
-                <Text color="gray.600">
-                  MBTI等から相性の良い仲間を探すことができるよ．
-                  素敵な人に出会えるかも😎
-                </Text>
-              </CardBody>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Heading size="md">Let's communication</Heading>
-              </CardHeader>
-              <CardBody>
-                <Text color="gray.600">
-                  Slackと連携し，あなたの会話やきっかけ作りをサポートします( ･´ｰ･｀)どや
-                </Text>
-              </CardBody>
-            </Card>
-          </SimpleGrid>
-
-          <Link href="/login">
-            <Button
-              size="lg"
-              colorScheme="blue"
-              rightIcon={<ArrowRight size={16} />}
-              px={8}
-            >
-              Get Started
-            </Button>
-          </Link>
-        </VStack>
+              </Stack>
+            </form>
+          </CardBody>
+        </Card>
       </Container>
     </Box>
   );
