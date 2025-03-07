@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from supabase_client import supabase
 import requests
+from urllib.parse import urlencode
 from config import SLACK_BOT_TOKEN
 
 router = APIRouter()
@@ -27,7 +28,21 @@ def check_email(email: str):
 
 
 @router.get("/connect_dm")
-def connect_dm(slack_id1 :str, slack_id2 :str):
-    # 担当(shibarin)
+def connect_dm(slack_id1: str, slack_id2: str):
+    url = "https://slack.com/api/conversations.open"
+    headers = {
+        "Authorization": f"Bearer {SLACK_BOT_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    payload = {"users": [slack_id1, slack_id2]}
+    
+    response = requests.post(url, headers=headers, json=payload)
+    data = response.json()
 
-    return {"URL": "https://slack.com/api/conversations.open的な感じで、DMを開くURLを返す"}
+    if not data.get("ok"):
+        raise HTTPException(status_code=500, detail=f"Slack API Error: {data.get('error')}")
+
+    channel_id = data["channel"]["id"]
+    slack_dm_url = f"https://slack.com/app_redirect?{urlencode({'channel': channel_id})}"
+
+    return {"URL": slack_dm_url}
