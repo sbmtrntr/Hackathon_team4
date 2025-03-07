@@ -11,7 +11,12 @@ import { FaMapMarkerAlt, FaGraduationCap, FaBriefcase,
   FaUserAlt, FaUniversity,FaHeart
 } from 'react-icons/fa';
 import axios from "axios";
+import { createClient } from "@supabase/supabase-js";
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 // 選択可能な項目の定義
 const matchingCriteria = [
   { id: 'hobbies', name: '趣味', icon: FaHeart, description: '同じ趣味を持つ人とマッチング' },
@@ -74,9 +79,9 @@ export default function MatchingPage() {
   const tagColorScheme = 'brand';
   //Vercelがエラー吐くので一旦コメントアウト
   // データを受け取った後にAPIに渡したい.
-  //const params = useSearchParams();
+  const params = useSearchParams();
   // データをlogin から受け渡し
-  //const [userdata, setUserData] = useState(params.getAll(""));
+  const userId = params.get('userId');
   // 項目の選択/選択解除を処理する関数
   const toggleCriterion = (criterionId: string) => {
     setSelectedCriteria(prev => 
@@ -137,8 +142,10 @@ export default function MatchingPage() {
       queryParams.append('preferences', pref);
     });
     //APIを叩いて呼ぶ
-    const response = axios.get(`http://localhost:8080/matching_result?user_id=61ecfa1e-6208-4093-ab93-9318f137b0ad`); 
-    router.push(`/matching/results?${queryParams.toString()}`);
+    const response = await axios.get(`http://localhost:8080/matching_result?user_id=${userId}`); 
+    const userIds = response.data.matches.map((match: any) => match.user_id).join('&user_ids='); // user_idsのクエリパラメータに連結
+    router.push(`/result?user_ids=${userIds}`);
+
   };
 
   // 次のタブに進む
