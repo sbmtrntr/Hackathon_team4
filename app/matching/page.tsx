@@ -72,6 +72,9 @@ export default function MatchingPage() {
   const selectedBg = useColorModeValue('brand.50', 'brand.900');
   const selectedBorder = useColorModeValue('brand.500', 'brand.200');
   const tagColorScheme = 'brand';
+  
+  const searchParams = new URLSearchParams();
+  const userId = searchParams.get("userId");
 
   // 項目の選択/選択解除を処理する関数
   const toggleCriterion = (criterionId: string) => {
@@ -133,8 +136,8 @@ export default function MatchingPage() {
       queryParams.append('preferences', pref);
     });
     
-    //const response = await axios.get(`http://localhost:8080/matching_result?user_id=${encodeURIComponent()}`); 
-    router.push(`/matching/results?${queryParams.toString()}`);
+    const response = await axios.get(`http://localhost:8080/matching_result?user_id=${userId}`); 
+    router.push(`/result?${queryParams.toString()}`);
   };
 
   // 次のタブに進む
