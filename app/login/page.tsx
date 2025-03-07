@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Box, Button, Card, CardBody, CardFooter, CardHeader, Center, FormControl, FormLabel, Heading, Input, InputGroup, InputLeftElement, Stack, Text, VStack } from '@chakra-ui/react';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import Link from 'next/link';
@@ -61,6 +61,7 @@ export default function CheckEmail() {
 
   return (
     <Box minH="100vw" bg="white" py={8} px={4}>
+      <Suspense>
       <Center>
         <Card w="full" maxW="md" borderRadius="lg" boxShadow="sm" borderWidth="1px" borderColor="gray.100">
           <CardHeader pb={0}>
@@ -134,6 +135,7 @@ export default function CheckEmail() {
           </CardFooter>
         </Card>
       </Center>
+      </Suspense>
     </Box>
   );
 }

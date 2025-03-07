@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
@@ -66,26 +66,28 @@ export default function RegisterPage() {
           </CardHeader>
 
           <CardBody>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={4}>
-                <FormControl isRequired>
-                  <FormLabel>お名前</FormLabel>
-                  <Input name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                </FormControl>
+            <Suspense>
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={4}>
+                  <FormControl isRequired>
+                    <FormLabel>お名前</FormLabel>
+                    <Input name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel>Email</FormLabel>
-                  <Input name="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-                </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Email</FormLabel>
+                    <Input name="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                  </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel>Password</FormLabel>
-                  <Input name="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
-                </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Password</FormLabel>
+                    <Input name="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  </FormControl>
 
-                <Button type="submit" colorScheme="blue" size="lg" w="full">次へ</Button>
-              </Stack>
-            </form>
+                  <Button type="submit" colorScheme="blue" size="lg" w="full">次へ</Button>
+                </Stack>
+              </form>
+            </Suspense>
           </CardBody>
         </Card>
       </Container>
