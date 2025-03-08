@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS user_attributes (
     mbti VARCHAR(4) CHECK (mbti IN ('INTJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP', 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESTP', 'ESFP')) NOT NULL,
     alma_mater VARCHAR(100) NOT NULL,
     preferences VARCHAR(10) CHECK (preferences IN ('hobbies', 'hometown', 'field', 'role', 'mbti', 'alma_mater')) NOT NULL,
+    self_introductions TEXT NOT NULL, -- 「自己紹介文」の列
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 """
@@ -41,6 +42,7 @@ CREATE_LIKES_SQL = """
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
         target_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        reasons TEXT NOT NULL, -- 「いいねの理由」の列
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_id, target_user_id) -- 1人につき1回だけ「いいね」できる
     );
