@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from config import SLACK_BOT_TOKEN
-from clustering import clustering
+# from clustering import clustering
 
 router = APIRouter()
 client = WebClient(token=SLACK_BOT_TOKEN)
@@ -80,3 +80,4 @@ def create_slack_channel_for_cluster(df_processed):
         if channel_id:
             user_ids = group["user_id"].tolist()  # Supabase の user_id を Slack のユーザーID に変換する処理が必要
             invite_users_to_channel(channel_id, user_ids)
+
