@@ -1,5 +1,5 @@
 # 1. ベースイメージとしてPython 3.9を使用
-FROM python:3.9-slim
+FROM python:3.9.21
 
 # 2. 作業ディレクトリを設定
 WORKDIR /app
