@@ -140,14 +140,11 @@ def check_matching(user_id1: str, user_id2: str):
 
     # user_id1 -> user_id2 の like を確認
     like1 = supabase.table("likes").select("*").eq("user_id", user_id1).eq("target_user_id", user_id2).execute()
-    print(f"{user_id1} -> {user_id2} like: {like1.data}")  # デバッグ用出力
     
     # user_id2 -> user_id1 の like を確認
     like2 = supabase.table("likes").select("*").eq("user_id", user_id2).eq("target_user_id", user_id1).execute()
-    print(f"{user_id2} -> {user_id1} like: {like2.data}")  # デバッグ用出力
     
     # 両方の like が存在する場合はマッチング成立
     is_match = bool(like1.data) and bool(like2.data)
-    print(f"Match status: {is_match}")  # デバッグ用出力
 
     return {"match": is_match}
