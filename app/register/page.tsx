@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { Users } from 'lucide-react';
 import axios from 'axios';
+import { CLOUD_RUN_URL } from "@/utils/config";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,7 +28,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try{
-      const response = await axios.get(`http://localhost:8080/check_email?email=${formData.email}`);
+      const response = await axios.get(`${CLOUD_RUN_URL}/check_email?email=${formData.email}`);
       const slack_id_n = response.data.slack_id;
       const message = response.data.message;
 

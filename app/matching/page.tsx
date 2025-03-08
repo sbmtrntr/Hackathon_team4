@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { CLOUD_RUN_URL } from "@/utils/config";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +32,7 @@ const MatchingPage = () => {
       if (index === messages.length - 1) {
         setTimeout(async () => {
           try {
-                const response = await axios.get(`http://localhost:8080/matching_result?user_id=${userId}`); 
+                const response = await axios.get(`${CLOUD_RUN_URL}/matching_result?user_id=${userId}`); 
                 const userIds = response.data.matches
                   .map((match: any) => match.user_id)
                   .join('&user_ids=');
