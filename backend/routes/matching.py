@@ -128,7 +128,7 @@ def calculate_match_score(target_user, other_user):
     # スコアを合計
     score = round(sum(match_scores.values()), 2)
 
-    return {"user_id": other_user["user_id"], "match_score": score}
+    return {"user_id": other_user["user_id"], "match_score": float(score)}
 
 
 @router.get("/check_matching")
