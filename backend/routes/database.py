@@ -49,18 +49,6 @@ CREATE_LIKES_SQL = """
     );
 """
 
-# ユーザのマッチング履歴を格納するテーブル
-# 使用目的：双方が「いいね」したらマッチングが成立し、それを保存する。
-CREATE_MATCHES_SQL = """
-CREATE TABLE matches (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user1_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    user2_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user1_id, user2_id) -- 重複マッチを防ぐ
-);
-"""
-
 
 # 各テーブルの削除クエリ
 DROP_USERS_SQL = "DROP TABLE IF EXISTS users CASCADE;"
@@ -177,12 +165,12 @@ INSERT_USER_ATTRIBUTES_SQL = """
 INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, mbti, alma_mater, preferences, self_introductions) VALUES
 ((SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), 'サッカー, 旅行, 映画鑑賞', '東京都', '公共', 'SE', 'INTJ', '早稲田大学', 'hobbies, mbti', '初めまして、鈴木一郎です。旅行と映画鑑賞が大好きで、静かな時間を楽しんでいます。共通の趣味を持つ方とお話しできることを楽しみにしています！'),
 ((SELECT id FROM users WHERE email = 'takahashi.misaki@example.com'), '読書, 映画鑑賞, カフェ', '神奈川県', '金融', '営業', 'INFJ', '慶應義塾大学', 'hobbies, field', '映画や読書が趣味の高橋美咲です。カフェ巡りが好きで、ゆっくりとした時間を大切にしています。金融業界に興味があり、理想的な仲間を探しています。'),
-((SELECT id FROM users WHERE email = 'sato.daisuke@example.com'), 'バスケットボール, 音楽, 旅行', '大阪府', '法人', 'SE', '京都大学', 'role, alma_mater', 'こんにちは、佐藤大輔です！音楽とバスケットボールが大好きで、旅行にもよく行きます。技術的な挑戦が好きなので、SEとして働いている方とお話ししたいです！'),
+((SELECT id FROM users WHERE email = 'sato.daisuke@example.com'), 'バスケットボール, 音楽, 旅行', '大阪府', '法人', 'SE', 'INFJ', '京都大学', 'role, alma_mater', 'こんにちは、佐藤大輔です！音楽とバスケットボールが大好きで、旅行にもよく行きます。技術的な挑戦が好きなので、SEとして働いている方とお話ししたいです！'),
 ((SELECT id FROM users WHERE email = 'tanaka.naoki@example.com'), 'プログラミング, 筋トレ, ゲーム', '北海道', '技統本', 'スタッフ', 'ENTP', '東京大学', 'hobbies, role', 'プログラミングが大好きで、筋トレも趣味です。ゲームを通じてリラックスするのが好きで、エンタープライズ系の技術職に興味があります。新しい技術に挑戦したいです。'),
 ((SELECT id FROM users WHERE email = 'nakamura.yumi@example.com'), '読書, カメラ, 映画鑑賞', '愛知県', '法人', 'SE', 'INFP', '名古屋大学', 'field', '初めまして、ナカムラユミです。カメラと映画が趣味で、週末は写真を撮りながら散歩しています。法人分野に興味があり、ビジネスを学びたいと思っています。どうぞよろしくお願いします！'),
 ((SELECT id FROM users WHERE email = 'yamamoto.shota@example.com'), '音楽, ゲーム, キャンプ', '大阪府', '公共', 'SE', 'ISTJ', '大阪大学', 'field, hobbies', '音楽やゲームが好きな山本翔太です。自然の中で過ごすことが好きで、キャンプもよく行きます。公共分野に関心があり、社会に貢献できる仕事を目指しています。'),
 ((SELECT id FROM users WHERE email = 'kobayashi.hitomi@example.com'), '映画鑑賞, ラーメン, スポーツ観戦', '京都府', '金融', '営業', 'ESFP', '立命館大学', 'hobbies', '映画とラーメンが大好きな小林仁美です。友達と映画を観ることが多いですが、スポーツ観戦も欠かせません。共通の趣味がある方とお友達になりたいです！'),
-((SELECT id FROM users WHERE email = 'kato.kenta@example.com'), '料理, 旅行, ボードゲーム', '福岡県', '法人', 'コンサル', '九州大学', 'role', 'こんにちは、加藤健太です。料理とボードゲームが好きで、特に友達との集まりが楽しみです。コンサルティング分野に興味があり、成長できる環境を求めています！'),
+((SELECT id FROM users WHERE email = 'kato.kenta@example.com'), '料理, 旅行, ボードゲーム', '福岡県', '法人', 'コンサル', 'ISTP', '九州大学', 'role', 'こんにちは、加藤健太です。料理とボードゲームが好きで、特に友達との集まりが楽しみです。コンサルティング分野に興味があり、成長できる環境を求めています！'),
 ((SELECT id FROM users WHERE email = 'matsumoto.ayako@example.com'), 'カフェ, 読書, 音楽', '東京都', '金融', 'コンサル', 'ISTP', '早稲田大学', 'hobbies', '松本綾子です。カフェでゆっくり過ごしながら読書を楽しんでいます。音楽も欠かせません。金融業界に興味があり、新しい挑戦に一緒に取り組める仲間を探しています。'),
 ((SELECT id FROM users WHERE email = 'ishii.keiko@example.com'), 'スポーツ観戦, 映画鑑賞, サッカー', '千葉県', 'TC&S', 'SE', 'ENFJ', '明治大学', 'mbti, role', '石井佳子です！スポーツ観戦が好きで、特にサッカーに情熱を注いでいます。映画鑑賞も趣味で、ポジティブなエネルギーを持った方々と一緒に働きたいです。よろしくお願いします！'),
 ((SELECT id FROM users WHERE email = 'okada.shota@example.com'), 'プログラミング, 筋トレ, 音楽', '東京都', '技統本', 'SE', 'INTP', '東京工業大学', 'hobbies, field', '岡田翔太です！筋トレが趣味で、プログラミングも大好きです。理系の道を進みながら、テクノロジーに関する新しい発見を共有できる仲間を探しています。'),
@@ -206,8 +194,8 @@ INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, mbti, alma
 ((SELECT id FROM users WHERE email = 'kimura.nagisa@example.com'), 'サッカー, 映画鑑賞, バスケットボール', '茨城県', '技統本', 'SE', 'ESTJ', '早稲田大学', 'hobbies', '木村渚です！サッカーとバスケットボールが好きで、映画鑑賞も楽しんでいます。技術的な分野で、チームワークを活かして成果を出していきたいと思っています。'),
 ((SELECT id FROM users WHERE email = 'fujiwara.rie@example.com'), 'ボードゲーム, 旅行, カメラ', '大阪府', '法人', 'SE', 'INFP', '関西大学', 'role', '藤原理恵です！ボードゲームが大好きで、旅行に出かけることが趣味です。法人の分野で、クリエイティブなアイディアを形にしていきたいです。'),
 ((SELECT id FROM users WHERE email = 'sasaki.keita@example.com'), 'サッカー, 音楽, 映画鑑賞', '東京都', '金融', '営業', 'ESTP', '慶應義塾大学', 'hobbies, role', '佐々木啓太です！サッカーや音楽が大好きで、映画鑑賞も趣味の一つです。営業職に興味があり、アクティブな環境で成長したいと思っています！'),
-((SELECT id FROM users WHERE email = 'miyazaki.sumiko@example.com'), '旅行, 料理, 読書', '京都府', '法人', 'INFP', '京都大学', 'field, hobbies', '宮崎寿美子です！旅行と料理が趣味で、読書もよくします。法人分野で新しい挑戦をし、人とのつながりを深められる環境を探しています。'),
-((SELECT id FROM users WHERE email = 'hayashi.tetsuya@example.com'), 'バスケットボール, カメラ, 音楽', '大阪府', '技統本', 'INTJ', '大阪大学', 'hobbies, mbti', '林哲也です。バスケットボールやカメラが趣味で、音楽も日常の一部です。論理的な思考を大切にし、技術分野での深い知識を身につけたいと考えています。'),
+((SELECT id FROM users WHERE email = 'miyazaki.sumiko@example.com'), '旅行, 料理, 読書', '京都府', '法人', 'SE', 'INFP', '京都大学', 'field, hobbies', '宮崎寿美子です！旅行と料理が趣味で、読書もよくします。法人分野で新しい挑戦をし、人とのつながりを深められる環境を探しています。'),
+((SELECT id FROM users WHERE email = 'hayashi.tetsuya@example.com'), 'バスケットボール, カメラ, 音楽', '大阪府', '技統本', 'SE', 'INTJ', '大阪大学', 'hobbies, mbti', '林哲也です。バスケットボールやカメラが趣味で、音楽も日常の一部です。論理的な思考を大切にし、技術分野での深い知識を身につけたいと考えています。'),
 ((SELECT id FROM users WHERE email = 'ogawa.ayaka@example.com'), '料理, 読書, 映画鑑賞', '兵庫県', '金融', 'SE', 'ESFJ', '関西大学', 'role', '小川彩花です！料理や読書が好きで、映画鑑賞も楽しんでいます。金融分野でキャリアを築き、ビジネスの成長に貢献したいと思っています。'),
 ((SELECT id FROM users WHERE email = 'murata.yuki@example.com'), '音楽, キャンプ, ボードゲーム', '神奈川県', '法人', '営業', 'ISTJ', '早稲田大学', 'hobbies', '村田由紀です！音楽とキャンプが大好きで、ボードゲームを友達と楽しんでいます。法人分野でビジネスの展開を学び、成長していきたいと思っています。'),
 ((SELECT id FROM users WHERE email = 'takagi.misako@example.com'), 'バスケットボール, 映画鑑賞, 旅行', '千葉県', '公共', 'SE', 'ISFP', '明治大学', 'mbti, field, hobbies', '高木美沙子です！バスケットボールと映画鑑賞が趣味で、旅行も大好きです。公共の分野で貢献できる仕事に携わりたいと考えています。'),
@@ -238,50 +226,50 @@ INSERT INTO user_attributes (user_id, hobbies, hometown, field, role, mbti, alma
 ((SELECT id FROM users WHERE email = 'iguchi.satoko@example.com'), '音楽, 映画鑑賞, 旅行', '京都府', '金融', '営業', 'ISFJ', '慶應義塾大学', 'hobbies', '井口聡子です！音楽と映画鑑賞が大好きで、旅行も楽しんでいます。営業職として人々と関わりながら成長していきたいと思っています。'),
 ((SELECT id FROM users WHERE email = 'harada.sho@example.com'), 'プログラミング, 映画鑑賞, バスケットボール', '大阪府', '技統本', 'コンサル', 'ENTP', '東京大学', 'hobbies, field', '原田翔です！プログラミングと映画鑑賞が趣味で、バスケットボールを楽しんでいます。技術分野で成長し、社会に貢献できる仕事をしたいです。'),
 ((SELECT id FROM users WHERE email = 'kato.tomoko@example.com'), '読書, 料理, ボードゲーム', '東京都', '法人', 'SE', 'ISTP', '名古屋大学', 'role, hobbies', '加藤智子です！読書と料理が趣味で、ボードゲームも楽しんでいます。法人分野で仕事を学び、成長したいと考えています。'),
-((SELECT id FROM users WHERE email = 'watanabe.naoko@example.com'), '音楽, サッカー, キャンプ', '神奈川県', '法人', 'ENFJ', '立命館大学', 'hobbies', '渡辺尚子です！音楽やサッカーが好きで、キャンプもよく楽しんでいます。法人分野で新しい挑戦をしていきたいです。'),
-((SELECT id FROM users WHERE email = 'sasaki.ai@example.com'), '映画鑑賞, 音楽, 旅行', '大阪府', '金融', 'INFJ', '慶應義塾大学', 'field', '佐々木愛です！映画鑑賞と音楽が大好きで、旅行にもよく行きます。金融分野でキャリアを積んで、社会に貢献したいと思っています。'),
-((SELECT id FROM users WHERE email = 'nomura.ryosuke@example.com'), 'ダンス, バスケットボール, サッカー', '愛知県', '公共', 'ISFP', '名古屋大学', 'role', '野村亮介です！ダンスやバスケットボールが好きで、サッカーもよく観戦します。公共の分野で人々に貢献できる仕事をしたいと考えています。'),
-((SELECT id FROM users WHERE email = 'imai.kazuya@example.com'), 'プログラミング, ゲーム, 映画鑑賞', '千葉県', '技統本', 'INTP', '東京工業大学', 'hobbies', '今井和也です！プログラミングとゲームが好きで、映画鑑賞も楽しんでいます。技術分野で新しい挑戦をしたいと考えています。'),
-((SELECT id FROM users WHERE email = 'shimada.yuko@example.com'), '音楽, サッカー, 読書', '北海道', '法人', 'ESFJ', '立命館大学', 'field', '島田裕子です！音楽とサッカーが好きで、読書も楽しんでいます。法人分野で働き、人々に貢献したいと思っています。'),
-((SELECT id FROM users WHERE email = 'ogawa.yuto@example.com'), 'ゲーム, サッカー, 料理', '東京都', '金融', 'ISTJ', '早稲田大学', 'field, hobbies', '小川優斗です！ゲームとサッカーが趣味で、料理も好きです。金融業界で働き、戦略的なキャリアを築いていきたいと思っています。'),
-((SELECT id FROM users WHERE email = 'kato.hiroko@example.com'), '映画鑑賞, 音楽, 旅行', '大阪府', '法人', 'ESFP', '慶應義塾大学', 'role', '加藤裕子です！映画鑑賞と音楽が好きで、旅行にもよく行きます。法人分野でリーダーシップを発揮し、チームと一緒に成果を出していきたいと思っています。'),
+((SELECT id FROM users WHERE email = 'watanabe.naoko@example.com'), '音楽, サッカー, キャンプ', '神奈川県', '法人','SE', 'ENFJ', '立命館大学', 'hobbies', '渡辺尚子です！音楽やサッカーが好きで、キャンプもよく楽しんでいます。法人分野で新しい挑戦をしていきたいです。'),
+((SELECT id FROM users WHERE email = 'sasaki.ai@example.com'), '映画鑑賞, 音楽, 旅行', '大阪府', '金融', 'スタッフ','INFJ', '慶應義塾大学', 'field', '佐々木愛です！映画鑑賞と音楽が大好きで、旅行にもよく行きます。金融分野でキャリアを積んで、社会に貢献したいと思っています。'),
+((SELECT id FROM users WHERE email = 'nomura.ryosuke@example.com'), 'ダンス, バスケットボール, サッカー', '愛知県', '公共', '営業', 'ISFP', '名古屋大学', 'role', '野村亮介です！ダンスやバスケットボールが好きで、サッカーもよく観戦します。公共の分野で人々に貢献できる仕事をしたいと考えています。'),
+((SELECT id FROM users WHERE email = 'imai.kazuya@example.com'), 'プログラミング, ゲーム, 映画鑑賞', '千葉県', '技統本', 'SE', 'INTP', '東京工業大学', 'hobbies', '今井和也です！プログラミングとゲームが好きで、映画鑑賞も楽しんでいます。技術分野で新しい挑戦をしたいと考えています。'),
+((SELECT id FROM users WHERE email = 'shimada.yuko@example.com'), '音楽, サッカー, 読書', '北海道', '法人', 'コンサル', 'ESFJ', '立命館大学', 'field', '島田裕子です！音楽とサッカーが好きで、読書も楽しんでいます。法人分野で働き、人々に貢献したいと思っています。'),
+((SELECT id FROM users WHERE email = 'ogawa.yuto@example.com'), 'ゲーム, サッカー, 料理', '東京都', '金融', '営業', 'ISTJ', '早稲田大学', 'field, hobbies', '小川優斗です！ゲームとサッカーが趣味で、料理も好きです。金融業界で働き、戦略的なキャリアを築いていきたいと思っています。'),
+((SELECT id FROM users WHERE email = 'kato.hiroko@example.com'), '映画鑑賞, 音楽, 旅行', '大阪府', '法人', 'コンサル', 'ESFP', '慶應義塾大学', 'role', '加藤裕子です！映画鑑賞と音楽が好きで、旅行にもよく行きます。法人分野でリーダーシップを発揮し、チームと一緒に成果を出していきたいと思っています。'),
 ((SELECT id FROM users WHERE email = 'yamashita.ami@example.com'), '映画鑑賞, 料理, 旅行', '東京都', '金融', '営業', 'INFJ', '早稲田大学', 'hobbies, field', '山下亜美です！映画鑑賞と料理が趣味で、旅行にもよく行きます。金融業界で営業として人々に貢献したいと思っています。'),
-((SELECT id FROM users WHERE email = 'matsumoto.takuya@example.com'), 'サッカー, バスケットボール, 音楽', '大阪府', '法人', 'ESTP', '慶應義塾大学', 'role', '松本卓也です！サッカーやバスケットボールが好きで、音楽を楽しんでいます。法人分野で新たなチャレンジをしたいと思っています。'),
-((SELECT id FROM users WHERE email = 'murata.shuichi@example.com'), '読書, 料理, ボードゲーム', '福岡県', '公共', 'ISFJ', '名古屋大学', 'role', '村田秀一です！読書と料理が好きで、ボードゲームを友達と楽しんでいます。公共分野で社会貢献できる仕事をしたいと思っています。'),
-((SELECT id FROM users WHERE email = 'takagi.aki@example.com'), '音楽, キャンプ, バスケットボール', '千葉県', '技統本', 'ISTP', '東京大学', 'hobbies', '高木亜紀です！音楽とキャンプが好きで、バスケットボールも楽しんでいます。技術分野で新しいアイデアを生み出したいと思っています。'),
-((SELECT id FROM users WHERE email = 'fukuda.yoshiko@example.com'), '映画鑑賞, サッカー, ダンス', '北海道', '金融', 'INTJ', '慶應義塾大学', 'alma_mater', '福田芳子です！映画鑑賞とサッカーが好きで、ダンスも楽しんでいます。金融分野で新たな挑戦をしていきたいです。'),
-((SELECT id FROM users WHERE email = 'yoshida.kazuya@example.com'), 'カメラ, 読書, ボードゲーム', '愛知県', '法人', 'ISTJ', '大阪大学', 'field', '吉田和也です！カメラと読書が趣味で、ボードゲームも楽しんでいます。法人分野での成長を目指し、貢献できる環境を探しています。'),
-((SELECT id FROM users WHERE email = 'sato.rei@example.com'), '音楽, サッカー, 映画鑑賞', '神奈川県', '技統本', 'ENFP', '早稲田大学', 'hobbies', '佐藤玲です！音楽とサッカーが大好きで、映画鑑賞も楽しんでいます。技術分野で新しい挑戦をしたいと考えています。'),
-((SELECT id FROM users WHERE email = 'kato.miki@example.com'), '旅行, 料理, ボードゲーム', '東京都', '金融', 'ISFP', '立命館大学', 'alma_mater', '加藤美樹です！旅行と料理が好きで、ボードゲームも楽しんでいます。金融業界で働きながら、成長できる環境を探しています。'),
-((SELECT id FROM users WHERE email = 'ishii.ken@example.com'), 'ゲーム, バスケットボール, 旅行', '大阪府', '法人', 'ENTJ', '東京大学', 'role', '石井健です！ゲームとバスケットボールが趣味で、旅行にもよく出かけます。法人分野でリーダーシップを発揮し、チームを牽引したいと思っています。'),
-((SELECT id FROM users WHERE email = 'kobayashi.rina@example.com'), '音楽, 映画鑑賞, カフェ', '北海道', '技統本', 'INTP', '北海道大学', 'hobbies', '小林里奈です！音楽と映画鑑賞が大好きで、カフェでゆっくり過ごすのが楽しみです。技術分野で深い知識を身につけ、新しい発見をしたいと考えています。'),
+((SELECT id FROM users WHERE email = 'matsumoto.takuya@example.com'), 'サッカー, バスケットボール, 音楽', '大阪府', '法人', '営業', 'ESTP', '慶應義塾大学', 'role', '松本卓也です！サッカーやバスケットボールが好きで、音楽を楽しんでいます。法人分野で新たなチャレンジをしたいと思っています。'),
+((SELECT id FROM users WHERE email = 'murata.shuichi@example.com'), '読書, 料理, ボードゲーム', '福岡県', '公共', 'スタッフ', 'ISFJ', '名古屋大学', 'role', '村田秀一です！読書と料理が好きで、ボードゲームを友達と楽しんでいます。公共分野で社会貢献できる仕事をしたいと思っています。'),
+((SELECT id FROM users WHERE email = 'takagi.aki@example.com'), '音楽, キャンプ, バスケットボール', '千葉県', '技統本', 'SE', 'ISTP', '東京大学', 'hobbies', '高木亜紀です！音楽とキャンプが好きで、バスケットボールも楽しんでいます。技術分野で新しいアイデアを生み出したいと思っています。'),
+((SELECT id FROM users WHERE email = 'fukuda.yoshiko@example.com'), '映画鑑賞, サッカー, ダンス', '北海道', '金融', 'SE', 'INTJ', '慶應義塾大学', 'alma_mater', '福田芳子です！映画鑑賞とサッカーが好きで、ダンスも楽しんでいます。金融分野で新たな挑戦をしていきたいです。'),
+((SELECT id FROM users WHERE email = 'yoshida.kazuya@example.com'), 'カメラ, 読書, ボードゲーム', '愛知県', '法人', '営業', 'ISTJ', '大阪大学', 'field', '吉田和也です！カメラと読書が趣味で、ボードゲームも楽しんでいます。法人分野での成長を目指し、貢献できる環境を探しています。'),
+((SELECT id FROM users WHERE email = 'sato.rei@example.com'), '音楽, サッカー, 映画鑑賞', '神奈川県', '技統本', 'SE', 'ENFP', '早稲田大学', 'hobbies', '佐藤玲です！音楽とサッカーが大好きで、映画鑑賞も楽しんでいます。技術分野で新しい挑戦をしたいと考えています。'),
+((SELECT id FROM users WHERE email = 'kato.miki@example.com'), '旅行, 料理, ボードゲーム', '東京都', '金融', 'スタッフ', 'ISFP', '立命館大学', 'alma_mater', '加藤美樹です！旅行と料理が好きで、ボードゲームも楽しんでいます。金融業界で働きながら、成長できる環境を探しています。'),
+((SELECT id FROM users WHERE email = 'ishii.ken@example.com'), 'ゲーム, バスケットボール, 旅行', '大阪府', '法人', 'スタッフ', 'ENTJ', '東京大学', 'role', '石井健です！ゲームとバスケットボールが趣味で、旅行にもよく出かけます。法人分野でリーダーシップを発揮し、チームを牽引したいと思っています。'),
+((SELECT id FROM users WHERE email = 'kobayashi.rina@example.com'), '音楽, 映画鑑賞, カフェ', '北海道', '技統本', '営業', 'INTP', '北海道大学', 'hobbies', '小林里奈です！音楽と映画鑑賞が大好きで、カフェでゆっくり過ごすのが楽しみです。技術分野で深い知識を身につけ、新しい発見をしたいと考えています。'),
 ((SELECT id FROM users WHERE email = 'tanaka.tomoka@example.com'), '旅行, 音楽, 読書', '大阪府', '法人', 'SE', 'INFP', '早稲田大学', 'hobbies, field', '田中友香です！旅行と音楽が大好きで、読書も楽しんでいます。SEとして、システム開発の分野で貢献できる仕事をしたいです。'),
-((SELECT id FROM users WHERE email = 'kawaguchi.kenji@example.com'), '映画鑑賞, サッカー, ダンス', '東京都', '金融', 'ISTJ', '慶應義塾大学', 'role', '川口賢治です！映画鑑賞とサッカーが趣味で、ダンスも楽しんでいます。金融業界でキャリアを築き、成長できるチャンスを求めています。'),
-((SELECT id FROM users WHERE email = 'tamura.hanako@example.com'), 'プログラミング, カメラ, 旅行', '千葉県', '技統本', 'INTP', '東京大学', 'hobbies', '田村華子です！プログラミングとカメラが好きで、旅行も楽しんでいます。技術の分野で新しい挑戦をし、成長したいと思っています。'),
-((SELECT id FROM users WHERE email = 'suzuki.masaki@example.com'), '料理, 音楽, ボードゲーム', '神奈川県', '法人', 'ENTJ', '立命館大学', 'role, alma_mater', '鈴木正樹です！料理や音楽が好きで、ボードゲームを友達と楽しんでいます。法人分野でリーダーシップを発揮し、成果を上げたいと考えています。'),
-((SELECT id FROM users WHERE email = 'yamamoto.shiho@example.com'), '映画鑑賞, バスケットボール, サッカー', '大阪府', '公共', 'ISFJ', '慶應義塾大学', 'field', '山本志保です！映画鑑賞とバスケットボールが趣味で、サッカーも好きです。公共の分野で活躍し、社会に貢献したいと思っています。'),
-((SELECT id FROM users WHERE email = 'matsuda.yuto@example.com'), '音楽, サッカー, ゲーム', '福岡県', '金融', 'ENFJ', '明治大学', 'hobbies', '松田悠人です！音楽とサッカーが大好きで、ゲームも趣味の一つです。金融業界で柔軟に対応しながら成長していきたいと思っています。'),
-((SELECT id FROM users WHERE email = 'saito.kazuki@example.com'), 'ダンス, バスケットボール, 読書', '東京都', '法人', 'ESTJ', '早稲田大学', 'filed, alma_mater', '斉藤一樹です！ダンスやバスケットボールが好きで、読書も楽しんでいます。法人分野でリーダーシップを発揮し、積極的に挑戦していきたいです。'),
-((SELECT id FROM users WHERE email = 'miura.kaoru@example.com'), '音楽, 旅行, サッカー', '愛知県', '技統本', 'INTJ', '名古屋大学', 'field', '三浦薫です！音楽と旅行が大好きで、サッカーも趣味です。技術の分野で成長し、新しい技術を身につけたいと考えています。'),
-((SELECT id FROM users WHERE email = 'kimura.yuka@example.com'), 'カメラ, 料理, 読書', '神奈川県', '金融', 'ISFP', '慶應義塾大学', 'role', '木村由香です！カメラと料理が趣味で、読書も好きです。金融業界で働きながら、スキルアップを目指しています。'),
-((SELECT id FROM users WHERE email = 'takahashi.shunsuke@example.com'), '映画鑑賞, ダンス, ラーメン', '大阪府', '法人', 'ENTP', '立命館大学', 'filed, hobbies', '高橋俊介です！映画鑑賞やダンスが好きで、ラーメンを食べ歩くことが楽しみです。法人分野で新しい価値を創出し、ビジネスの成長に貢献したいと思っています。'),
+((SELECT id FROM users WHERE email = 'kawaguchi.kenji@example.com'), '映画鑑賞, サッカー, ダンス', '東京都', '金融', '営業', 'ISTJ', '慶應義塾大学', 'role', '川口賢治です！映画鑑賞とサッカーが趣味で、ダンスも楽しんでいます。金融業界でキャリアを築き、成長できるチャンスを求めています。'),
+((SELECT id FROM users WHERE email = 'tamura.hanako@example.com'), 'プログラミング, カメラ, 旅行', '千葉県', '技統本', 'SE', 'INTP', '東京大学', 'hobbies', '田村華子です！プログラミングとカメラが好きで、旅行も楽しんでいます。技術の分野で新しい挑戦をし、成長したいと思っています。'),
+((SELECT id FROM users WHERE email = 'suzuki.masaki@example.com'), '料理, 音楽, ボードゲーム', '神奈川県', '法人','SE', 'ENTJ', '立命館大学', 'role, alma_mater', '鈴木正樹です！料理や音楽が好きで、ボードゲームを友達と楽しんでいます。法人分野でリーダーシップを発揮し、成果を上げたいと考えています。'),
+((SELECT id FROM users WHERE email = 'yamamoto.shiho@example.com'), '映画鑑賞, バスケットボール, サッカー', '大阪府', '公共', 'SE', 'ISFJ', '慶應義塾大学', 'field', '山本志保です！映画鑑賞とバスケットボールが趣味で、サッカーも好きです。公共の分野で活躍し、社会に貢献したいと思っています。'),
+((SELECT id FROM users WHERE email = 'matsuda.yuto@example.com'), '音楽, サッカー, ゲーム', '福岡県', '金融', '営業', 'ENFJ', '明治大学', 'hobbies', '松田悠人です！音楽とサッカーが大好きで、ゲームも趣味の一つです。金融業界で柔軟に対応しながら成長していきたいと思っています。'),
+((SELECT id FROM users WHERE email = 'saito.kazuki@example.com'), 'ダンス, バスケットボール, 読書', '東京都', '法人', '営業', 'ESTJ', '早稲田大学', 'filed, alma_mater', '斉藤一樹です！ダンスやバスケットボールが好きで、読書も楽しんでいます。法人分野でリーダーシップを発揮し、積極的に挑戦していきたいです。'),
+((SELECT id FROM users WHERE email = 'miura.kaoru@example.com'), '音楽, 旅行, サッカー', '愛知県', '技統本', 'SE', 'INTJ', '名古屋大学', 'field', '三浦薫です！音楽と旅行が大好きで、サッカーも趣味です。技術の分野で成長し、新しい技術を身につけたいと考えています。'),
+((SELECT id FROM users WHERE email = 'kimura.yuka@example.com'), 'カメラ, 料理, 読書', '神奈川県', '金融', 'スタッフ', 'ISFP', '慶應義塾大学', 'role', '木村由香です！カメラと料理が趣味で、読書も好きです。金融業界で働きながら、スキルアップを目指しています。'),
+((SELECT id FROM users WHERE email = 'takahashi.shunsuke@example.com'), '映画鑑賞, ダンス, ラーメン', '大阪府', '法人', 'SE', 'ENTP', '立命館大学', 'filed, hobbies', '高橋俊介です！映画鑑賞やダンスが好きで、ラーメンを食べ歩くことが楽しみです。法人分野で新しい価値を創出し、ビジネスの成長に貢献したいと思っています。'),
 ((SELECT id FROM users WHERE email = 'nishimura.koji@example.com'), 'サッカー, 音楽, ダンス', '愛知県', '金融', '営業', 'ESTJ', '慶應義塾大学', 'role', '西村浩二です！サッカーや音楽が好きで、ダンスも楽しんでいます。営業職として、他の人々と信頼関係を築いていきたいと思っています。'),
-((SELECT id FROM users WHERE email = 'tamura.hiroko@example.com'), '映画鑑賞, 読書, 旅行', '東京都', '法人', 'INFJ', '早稲田大学', 'hobbies', '田村浩子です！映画鑑賞と読書が趣味で、旅行にもよく出かけます。法人分野で新しいプロジェクトに関わり、成長していきたいと思っています。'),
-((SELECT id FROM users WHERE email = 'kobayashi.yui@example.com'), '音楽, 旅行, バスケットボール', '大阪府', '金融', 'ISTP', '京都大学', 'alma_mater', '小林結衣です！音楽と旅行が大好きで、バスケットボールも趣味の一つです。金融業界で新しい挑戦をし、キャリアを築いていきたいと思っています。'),
-((SELECT id FROM users WHERE email = 'matsumoto.shinya@example.com'), 'プログラミング, サッカー, 料理', '神奈川県', '技統本', 'INTJ', '東京大学', 'hobbies', '松本信也です！プログラミングとサッカーが好きで、料理も得意です。技術分野で新しい挑戦をしたいと考えています。'),
-((SELECT id FROM users WHERE email = 'ikeda.misaki@example.com'), '音楽, カメラ, 映画鑑賞', '北海道', '法人', 'ENTP', '慶應義塾大学', 'role', '池田美咲です！音楽とカメラが趣味で、映画鑑賞も楽しんでいます。法人分野で新しい価値を創造し、活躍したいと考えています。'),
-((SELECT id FROM users WHERE email = 'kinoshita.tomoyuki@example.com'), '旅行, サッカー, 音楽', '大阪府', '金融', 'INFP', '名古屋大学', 'hobbies, alma_mater', '木下知幸です！旅行とサッカーが好きで、音楽も日常の一部です。金融業界で積極的に学び、成長したいと思っています。'),
-((SELECT id FROM users WHERE email = 'tanaka.minoru@example.com'), '映画鑑賞, ボードゲーム, 音楽', '福岡県', '法人', 'ESTP', '東京大学', 'hobbies', '田中実です！映画鑑賞やボードゲームが趣味で、音楽を聴くことが大好きです。法人分野で働き、新しい挑戦に取り組みたいと思っています。'),
-((SELECT id FROM users WHERE email = 'nagai.yu@example.com'), 'スポーツ観戦, サッカー, 音楽', '東京都', '技統本', 'ISFJ', '早稲田大学', 'field', '永井優です！スポーツ観戦とサッカーが大好きで、音楽も欠かせません。技術分野で成長し、新しいプロジェクトに関わりたいと思っています。'),
-((SELECT id FROM users WHERE email = 'kawaguchi.miho@example.com'), '読書, バスケットボール, 音楽', '大阪府', '金融', 'INFP', '慶應義塾大学', 'hobbies', '川口美穂です！読書とバスケットボールが趣味で、音楽を聴くことも楽しんでいます。金融分野で働き、将来的に多くの人と協力していきたいと思っています。'),
-((SELECT id FROM users WHERE email = 'ishii.tetsuya@example.com'), '旅行, 音楽, ゲーム', '東京都', '法人', 'ISTJ', '名古屋大学', 'role', '石井哲也です！旅行や音楽が好きで、ゲームも楽しんでいます。法人分野でリーダーシップを発揮し、成長していきたいと思っています。');
+((SELECT id FROM users WHERE email = 'tamura.hiroko@example.com'), '映画鑑賞, 読書, 旅行', '東京都', '法人', 'SE', 'INFJ', '早稲田大学', 'hobbies', '田村浩子です！映画鑑賞と読書が趣味で、旅行にもよく出かけます。法人分野で新しいプロジェクトに関わり、成長していきたいと思っています。'),
+((SELECT id FROM users WHERE email = 'kobayashi.yui@example.com'), '音楽, 旅行, バスケットボール', '大阪府', '金融', 'SE', 'ISTP', '京都大学', 'alma_mater', '小林結衣です！音楽と旅行が大好きで、バスケットボールも趣味の一つです。金融業界で新しい挑戦をし、キャリアを築いていきたいと思っています。'),
+((SELECT id FROM users WHERE email = 'matsumoto.shinya@example.com'), 'プログラミング, サッカー, 料理', '神奈川県', '技統本', 'SE', 'INTJ', '東京大学', 'hobbies', '松本信也です！プログラミングとサッカーが好きで、料理も得意です。技術分野で新しい挑戦をしたいと考えています。'),
+((SELECT id FROM users WHERE email = 'ikeda.misaki@example.com'), '音楽, カメラ, 映画鑑賞', '北海道', '法人', 'スタッフ', 'ENTP', '慶應義塾大学', 'role', '池田美咲です！音楽とカメラが趣味で、映画鑑賞も楽しんでいます。法人分野で新しい価値を創造し、活躍したいと考えています。'),
+((SELECT id FROM users WHERE email = 'kinoshita.tomoyuki@example.com'), '旅行, サッカー, 音楽', '大阪府', '金融', 'SE', 'INFP', '名古屋大学', 'hobbies, alma_mater', '木下知幸です！旅行とサッカーが好きで、音楽も日常の一部です。金融業界で積極的に学び、成長したいと思っています。'),
+((SELECT id FROM users WHERE email = 'tanaka.minoru@example.com'), '映画鑑賞, ボードゲーム, 音楽', '福岡県', '法人', '営業', 'ESTP', '東京大学', 'hobbies', '田中実です！映画鑑賞やボードゲームが趣味で、音楽を聴くことが大好きです。法人分野で働き、新しい挑戦に取り組みたいと思っています。'),
+((SELECT id FROM users WHERE email = 'nagai.yu@example.com'), 'スポーツ観戦, サッカー, 音楽', '東京都', '技統本', 'SE', 'ISFJ', '早稲田大学', 'field', '永井優です！スポーツ観戦とサッカーが大好きで、音楽も欠かせません。技術分野で成長し、新しいプロジェクトに関わりたいと思っています。'),
+((SELECT id FROM users WHERE email = 'kawaguchi.miho@example.com'), '読書, バスケットボール, 音楽', '大阪府', '金融', '営業', 'INFP', '慶應義塾大学', 'hobbies', '川口美穂です！読書とバスケットボールが趣味で、音楽を聴くことも楽しんでいます。金融分野で働き、将来的に多くの人と協力していきたいと思っています。'),
+((SELECT id FROM users WHERE email = 'ishii.tetsuya@example.com'), '旅行, 音楽, ゲーム', '東京都', '法人', '営業', 'ISTJ', '名古屋大学', 'role', '石井哲也です！旅行や音楽が好きで、ゲームも楽しんでいます。法人分野でリーダーシップを発揮し、成長していきたいと思っています。');
 """
 
 INSERT_LIKES_SQL = """
-INSERT INTO likes (id, user_id, target_user_id, created_at) VALUES
-('b1f94672-4c23-4a8e-b5c5-61b4f3f5e7a1', (SELECT id FROM users WHERE email = 'tanaka.taro@example.com'), (SELECT id FROM users WHERE email = 'sato.hanako@example.com'), '2025-03-03 12:00:00'),
-('c2e58a6b-2d1f-48f6-b871-9a362b4f5d3e', (SELECT id FROM users WHERE email = 'sato.hanako@example.com'), (SELECT id FROM users WHERE email = 'tanaka.taro@example.com'), '2025-03-03 12:05:00'),
-('d3c74e9c-4b47-4d2f-bacf-61a57d3f5a9e', (SELECT id FROM users WHERE email = 'sato.hanako@example.com'), (SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), '2025-03-03 12:10:00');
+INSERT INTO likes (id, user_id, target_user_id, reasons, created_at) VALUES
+('b1f94672-4c23-4a8e-b5c5-61b4f3f5e7a1', (SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), (SELECT id FROM users WHERE email = 'takahashi.misaki@example.com'), '最近ボードゲームの楽しさを知ったので、一緒にボードゲームしたいです。', '2025-03-03 12:00:00'),
+('c2e58a6b-2d1f-48f6-b871-9a362b4f5d3e', (SELECT id FROM users WHERE email = 'takahashi.misaki@example.com'), (SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), '東京詳しくないので、東京の観光地など教えて欲しいです。', '2025-03-03 12:05:00'),
+('d3c74e9c-4b47-4d2f-bacf-61a57d3f5a9e', (SELECT id FROM users WHERE email = 'ishii.tetsuya@example.com'), (SELECT id FROM users WHERE email = 'suzuki.ichiro@example.com'), 'MBTIが同じだったので、気が合うかもと思い、いいねしました。', '2025-03-03 12:10:00');
 """
 
 
