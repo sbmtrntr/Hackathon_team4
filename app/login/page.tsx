@@ -34,23 +34,21 @@ export default function CheckEmail() {
 
       if (error || !users) {
         setMessage("メールアドレスが間違っているか，登録されていません．");
-        //alert("メールアドレスまたはパスワードが違います．");
-        //router.push("/register");
+        alert(message);
         setEmail("");
         setPassword("");
         return;
       }
-
       // 🔹 入力パスワードとハッシュを比較
-      //const isMatch = await bcrypt.compare(password, users.password_hash);
-      //if (!isMatch) {
-      //  setMessage("パスワードが正しくありません");
-      //  return;
-      //}
+      const isMatch = await bcrypt.compare(password, users.password_hash);
+      if (!isMatch) {
+        setMessage("パスワードが正しくありません");
+        return;
+      }
 
       // 🔹 ログイン成功 → ダッシュボードへ遷移
       const queryString = new URLSearchParams({ userId: users.id }).toString();
-      router.push(`/matching?${queryString}`);
+      router.push(`/likes?${queryString}`);
 
     } catch (error) {
       console.error("ログインエラー:", error);

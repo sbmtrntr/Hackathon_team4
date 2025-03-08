@@ -4,9 +4,10 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import {
-  Box, Button, Container, FormControl, FormLabel,
+  Box, Button, Container, FormControl, FormLabel, Textarea,
   Heading, Select, Stack, VStack, Card, CardBody, CardHeader, Tag, TagLabel, TagCloseButton, Input
 } from '@chakra-ui/react';
+import { User } from 'lucide-react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,6 +40,19 @@ const PREFERENCES = [
   "mbti", "hobbies", "hometown", "field", "role", "alma_mater"
 ];
 
+type User = {
+  user_id: string;
+  hobbies: string;
+  field: string;
+  role: string;
+  mbti: string;
+  alma_mater: string;
+  preferences: string;
+  hometown: string; // hometownを追加
+  self_introductions: string;
+  name?: string;  // nameはSupabaseから取得していない場合があるのでオプショナルに
+};
+
 export default function RegisterDetailsPage() {
   const router = useRouter();
 
@@ -52,7 +66,28 @@ export default function RegisterDetailsPage() {
 
 function SearchParamsWrapper({ router }: { router: any }) {
   const searchParams = useSearchParams();
+  const [users, setUsers] = useState<User[]>([]);
   const userId = searchParams.get('userId');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data, error } = await supabase
+        .from('user_attributes')
+        .select('user_id, hometown, hobbies, field, role, mbti, alma_mater, preferences, self_introductions')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.log('Error fetching users:', error);
+        alert("ユーザープロフィールが見つかりませんでした．");
+        router.push('/userinfo')
+        return;
+      } else if (data) {
+        setUsers(data);
+      }
+    };
+
+    fetchData();
+  }, [userId]);
 
   const [formData, setFormData] = useState<{
     mbti: string;
@@ -62,6 +97,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
     hometown: string;
     almaMater: string;
     preferences: string;
+    self_introductions: string;
   }>({
     mbti: '',
     field: '',
@@ -69,16 +105,27 @@ function SearchParamsWrapper({ router }: { router: any }) {
     hobbies: [],
     hometown: '',
     almaMater: '',
-    preferences: ''
+    preferences: '',
+    self_introductions: '',
   });
 
+  // usersデータが取得されたらformDataに反映
   useEffect(() => {
-    if (!userId) {
-      alert("ユーザーIDが見つかりません。");
-      router.push('/register');
+    if (users.length > 0) {
+      const user = users[0];
+      setFormData({
+        mbti: user.mbti,
+        field: user.field || '',
+        role: user.role || '',
+        hobbies: user.hobbies ? user.hobbies.split(', ') : [],
+        hometown: user.hometown || '',
+        almaMater: user.alma_mater || '',
+        preferences: user.preferences || '',
+        self_introductions: user.self_introductions || '',
+      });
     }
-  }, [userId, router]);
-
+  }, 
+  [users]);
   const handleHobbyToggle = (hobby: string) => {
     setFormData((prev) => {
       const updatedHobbies = prev.hobbies.includes(hobby)
@@ -92,10 +139,10 @@ function SearchParamsWrapper({ router }: { router: any }) {
     e.preventDefault();
 
     if (!userId) return;
-
+      
     const { error } = await supabase
       .from('user_attributes')
-      .insert([{ 
+      .update([{ 
         user_id: userId, 
         hobbies: formData.hobbies.join(', '), 
         hometown: formData.hometown, 
@@ -103,17 +150,17 @@ function SearchParamsWrapper({ router }: { router: any }) {
         role: formData.role, 
         mbti: formData.mbti, 
         alma_mater: formData.almaMater, 
-        preferences: formData.preferences 
-      }]);
+        preferences: formData.preferences,
+        self_introductions: formData.self_introductions}])
+      .eq("user_id",userId);
 
     if (error) {
-      alert(formData.preferences);
       alert("登録に失敗しました。");
       return;
     }
 
-    alert("プロフィールが完成しました！");
-    router.push('/matching');
+    alert("プロフィールを更新しました！");
+    router.push(`/matching?userId=${userId}`);
   };
 
   return (
@@ -194,8 +241,17 @@ function SearchParamsWrapper({ router }: { router: any }) {
                         {PREFERENCES.map((preference) => <option key={preference} value={preference}>{preference}</option>)}
                       </Select>
                     </FormControl>
-
-                    <Button type="submit" colorScheme="blue" size="lg" w="full">登録完了</Button>
+                    
+                    {/* 自己紹介 */}
+                    <FormControl isRequired>
+                      <FormLabel>自己紹介</FormLabel>
+                      <Textarea
+                        name="self_introductions"
+                        value={formData.self_introductions}
+                        onChange={(e) => setFormData({ ...formData, self_introductions: e.target.value })}
+                        placeholder="自己紹介文を入力してください"/>
+                    </FormControl>
+                    <Button type="submit" colorScheme="blue" size="lg" w="full">編集完了</Button>
                   </Stack>
                 </form>
             </CardBody>
