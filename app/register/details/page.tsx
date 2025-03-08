@@ -4,10 +4,12 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import {
-  Box, Button, Container, FormControl, FormLabel,
-  Heading, Select, Stack, VStack, Card, CardBody, CardHeader, Tag, TagLabel, TagCloseButton, Input
-} from '@chakra-ui/react';
-
+  Box, Container, Card, CardHeader, CardBody,
+  VStack, Heading, Stack, FormControl, FormLabel,
+  Select, Input, Textarea, Button, Tag, TagLabel,
+  TagCloseButton, Grid, GridItem, Icon, Tooltip
+} from "@chakra-ui/react";
+import { FaUser, FaBriefcase, FaMapMarkerAlt, FaUniversity, FaHeart, FaPen } from "react-icons/fa";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -62,6 +64,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
     hometown: string;
     almaMater: string;
     preferences: string;
+    self_introductions: string;
   }>({
     mbti: '',
     field: '',
@@ -69,23 +72,36 @@ function SearchParamsWrapper({ router }: { router: any }) {
     hobbies: [],
     hometown: '',
     almaMater: '',
-    preferences: ''
+    preferences: '',
+    self_introductions: ''
   });
-
-  useEffect(() => {
+  //一旦，コメントアウト
+  /*useEffect(() => {
     if (!userId) {
       alert("ユーザーIDが見つかりません。");
       router.push('/register');
     }
-  }, [userId, router]);
+  }, [userId, router]);*/
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      mbti: MBTI_TYPES[0],
+      field: FIELDS[0],
+      role: ROLES[0],  // 希望職種の初期値を追加
+      hometown: PREFECTURES[0],
+      preferences: PREFERENCES[0],
+    }));
+  }, []);
 
-  const handleHobbyToggle = (hobby: string) => {
-    setFormData((prev) => {
-      const updatedHobbies = prev.hobbies.includes(hobby)
+  const handleHobbyToggle = (hobby:any) => {
+    setFormData((prev) => ({
+      ...prev,
+      hobbies: prev.hobbies.includes(hobby)
         ? prev.hobbies.filter((h) => h !== hobby)
-        : [...prev.hobbies, hobby];
-      return { ...prev, hobbies: updatedHobbies };
-    });
+        : prev.hobbies.length < 3
+          ? [...prev.hobbies, hobby]
+          : prev.hobbies
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,7 +119,8 @@ function SearchParamsWrapper({ router }: { router: any }) {
         role: formData.role, 
         mbti: formData.mbti, 
         alma_mater: formData.almaMater, 
-        preferences: formData.preferences 
+        preferences: formData.preferences,
+        self_introductions: formData.self_introductions
       }]);
 
     if (error) {
@@ -117,90 +134,147 @@ function SearchParamsWrapper({ router }: { router: any }) {
   };
 
   return (
-    <Box minH="100vh" py={12} px={4} bg="gray.50">
-        <Container maxW="md">
-          <Card shadow="xl" borderRadius="xl">
-            <CardHeader>
-              <VStack spacing={4}>
-                <Heading size="md">プロフィール詳細</Heading>
-              </VStack>
-            </CardHeader>
+    <Box minH="100vh" py={12} px={4} bgGradient="linear(to-r, blue.50, pink.50)">
+      <Container maxW="lg">
+        <Card shadow="2xl" borderRadius="2xl" bg="white">
+          <CardHeader>
+            <VStack spacing={4}>
+              <Heading size="lg" color="blue.500">プロフィール詳細</Heading>
+            </VStack>
+          </CardHeader>
 
-            <CardBody>
-                <form onSubmit={handleSubmit}>
-                  <Stack spacing={4}>
-                    <FormControl isRequired>
-                      <FormLabel>MBTI</FormLabel>
-                      <Select name="mbti" value={formData.mbti} onChange={(e) => setFormData({ ...formData, mbti: e.target.value })}>
-                        {MBTI_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-                      </Select>
-                    </FormControl>
+          <CardBody>
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={5}>
+                {/* MBTI */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaUser} mr={2} /> MBTI</FormLabel>
+                  <Select
+                    name="mbti"
+                    value={formData.mbti}
+                    onChange={(e) => setFormData({ ...formData, mbti: e.target.value })}
+                  >
+                    {MBTI_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </Select>
+                </FormControl>
 
-                    <FormControl isRequired>
-                      <FormLabel>希望分野</FormLabel>
-                      <Select name="field" value={formData.field} onChange={(e) => setFormData({ ...formData, field: e.target.value })}>
-                        {FIELDS.map((field) => <option key={field} value={field}>{field}</option>)}
-                      </Select>
-                    </FormControl>
+                {/* 希望分野 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaBriefcase} mr={2} /> 希望分野</FormLabel>
+                  <Select
+                    name="field"
+                    value={formData.field}
+                    onChange={(e) => setFormData({ ...formData, field: e.target.value })}
+                  >
+                    {FIELDS.map((field) => (
+                      <option key={field} value={field}>{field}</option>
+                    ))}
+                  </Select>
+                </FormControl>
 
-                    <FormControl isRequired>
-                      <FormLabel>希望職種</FormLabel>
-                      <Select name="role" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-                        {ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
-                      </Select>
-                    </FormControl>
+                {/* 希望職種 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaBriefcase} mr={2} /> 希望職種</FormLabel>
+                  <Select
+                    name="role"
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  >
+                    {ROLES.map((role) => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </Select>
+                </FormControl>
 
-                    <FormControl isRequired>
-                      <FormLabel>趣味</FormLabel>
-                      <Stack direction="row" flexWrap="wrap">
-                        {HOBBIES.map((hobby) => (
-                          <Tag
-                            key={hobby}
-                            size="lg"
-                            variant={formData.hobbies.includes(hobby) ? "solid" : "outline"}
-                            colorScheme="blue"
-                            cursor="pointer"
-                            onClick={() => handleHobbyToggle(hobby)}
-                            m={1}
-                          >
-                            <TagLabel>{hobby}</TagLabel>
-                            {formData.hobbies.includes(hobby) && <TagCloseButton />}
-                          </Tag>
-                        ))}
-                      </Stack>
-                    </FormControl>
+                {/* 趣味 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaHeart} mr={2} /> 趣味</FormLabel>
+                  <Grid templateColumns="repeat(3, 1fr)" gap={2}>
+                    {HOBBIES.map((hobby) => (
+                      <GridItem key={hobby}>
+                        <Tag
+                          size="lg"
+                          variant={formData.hobbies.includes(hobby) ? "solid" : "outline"}
+                          colorScheme="blue"
+                          cursor="pointer"
+                          onClick={() => handleHobbyToggle(hobby)}
+                        >
+                          <TagLabel>{hobby}</TagLabel>
+                          {formData.hobbies.includes(hobby) && <TagCloseButton />}
+                        </Tag>
+                      </GridItem>
+                    ))}
+                  </Grid>
+                </FormControl>
 
-                    <FormControl isRequired>
-                      <FormLabel>出身地</FormLabel>
-                      <Select name="hometown" value={formData.hometown} onChange={(e) => setFormData({ ...formData, hometown: e.target.value })}>
-                        {PREFECTURES.map((prefecture) => <option key={prefecture} value={prefecture}>{prefecture}</option>)}
-                      </Select>
-                    </FormControl>
+                {/* 出身地 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaMapMarkerAlt} mr={2} /> 出身地</FormLabel>
+                  <Select
+                    name="hometown"
+                    value={formData.hometown}
+                    onChange={(e) => setFormData({ ...formData, hometown: e.target.value })}
+                  >
+                    {PREFECTURES.map((prefecture) => (
+                      <option key={prefecture} value={prefecture}>{prefecture}</option>
+                    ))}
+                  </Select>
+                </FormControl>
 
-                    <FormControl isRequired>
-                      <FormLabel>出身校</FormLabel>
-                      <Input
-                        type="text"
-                        name="almaMater"
-                        value={formData.almaMater}
-                        onChange={(e) => setFormData({ ...formData, almaMater: e.target.value })}
-                        placeholder="大学名を入力"
-                      />
-                    </FormControl>
+                {/* 出身校 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaUniversity} mr={2} /> 出身校</FormLabel>
+                  <Input
+                    type="text"
+                    name="almaMater"
+                    value={formData.almaMater}
+                    onChange={(e) => setFormData({ ...formData, almaMater: e.target.value })}
+                    placeholder="大学名を入力"
+                  />
+                </FormControl>
 
-                    <FormControl isRequired>
-                      <FormLabel>重視する項目</FormLabel>
-                      <Select name="preferences" value={formData.preferences} onChange={(e) => setFormData({ ...formData, preferences: e.target.value })}>
-                        {PREFERENCES.map((preference) => <option key={preference} value={preference}>{preference}</option>)}
-                      </Select>
-                    </FormControl>
+                {/* 重視する項目 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaPen} mr={2} /> 重視する項目</FormLabel>
+                  <Select
+                    name="preferences"
+                    value={formData.preferences}
+                    onChange={(e) => setFormData({ ...formData, preferences: e.target.value })}
+                  >
+                    {PREFERENCES.map((preference) => (
+                      <option key={preference} value={preference}>{preference}</option>
+                    ))}
+                  </Select>
+                </FormControl>
 
-                    <Button type="submit" colorScheme="blue" size="lg" w="full">登録完了</Button>
-                  </Stack>
-                </form>
-            </CardBody>
-          </Card>
-        </Container>
+                {/* 自己紹介 */}
+                <FormControl isRequired>
+                  <FormLabel>自己紹介</FormLabel>
+                  <Textarea
+                    name="self_introductions"
+                    value={formData.self_introductions}
+                    onChange={(e) => setFormData({ ...formData, self_introductions: e.target.value })}
+                    placeholder="自己紹介文を入力してください"
+                  />
+                </FormControl>
+
+                {/* 登録完了ボタン */}
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  size="lg"
+                  w="full"
+                  _hover={{ bg: "blue.600" }}
+                >
+                  登録完了
+                </Button>
+              </Stack>
+            </form>
+          </CardBody>
+        </Card>
+      </Container>
     </Box>
   );
 }

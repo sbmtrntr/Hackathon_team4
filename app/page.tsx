@@ -17,15 +17,13 @@ export default function Home() {
         <VStack spacing={16} textAlign="center">
           {/* Hero Section */}
           <VStack spacing={8}>
-            <Flex
-              bg="brand.50"
-              p={3}
-              rounded="full"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Icon as={FaUserFriends} w={12} h={12} color="brand.500" />
-            </Flex>
+            
+              <Image
+                  src="/images/NicoLink_logo.png"
+                  borderRadius="full"
+                  boxSize="300px"
+                  mr={3}
+                />
               
             <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.600" maxW="2xl">
               2025年卒の同期社会人とつながり、新しい友人や仲間を見つけましょう。
@@ -89,8 +87,8 @@ export default function Home() {
                 ユーザーの声
               </Heading>
               <Text fontSize="lg" fontStyle="italic" color="gray.600" maxW="3xl">
-                  ここに誰かのコメント的なやつをつけると胡散臭さが増していい気がします．
-                  例として，じろけんさんのやつ貼っていますが，肖像権を失っている方チーム内で募集しています．
+                  社会人生活では気の合う友人が出来るかとても不安ですよね..<br></br>
+                  でも，このアプリなら相性の良い恋人や気の合う仲間を見つけることができそうです！
               </Text>
               <Flex align="center">
                 <Image
@@ -102,7 +100,7 @@ export default function Home() {
                 />
                 <Box textAlign="left">
                   <Text fontWeight="bold" color="gray.700">廣瀬健二朗</Text>
-                  <Text fontSize="sm" color="gray.500">ハッカソンチーム4 / 2025年卒</Text>
+                  <Text fontSize="sm" color="gray.500">ハッカソンチーム4 / 2025年度入社</Text>
                 </Box>
               </Flex>
             </VStack>
