@@ -91,7 +91,7 @@ export default function UserInfoEditPage() {
                 </FormControl>
 
                 <Button type="submit" colorScheme="blue" size="lg" w="full">
-                  更新する
+                  次へ
                 </Button>
               </Stack>
             </form>
