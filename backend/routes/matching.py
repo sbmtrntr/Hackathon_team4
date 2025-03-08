@@ -96,7 +96,6 @@ def calculate_match_score(target_user, other_user):
             ouh_vec = hobby_vectors[ouh]
             # コサイン類似度を計算
             match_scores["hobbies"] += np.dot(tuh_vec, ouh_vec) / (np.linalg.norm(tuh_vec) * np.linalg.norm(ouh_vec))
-            print(tuh, ouh, np.dot(tuh_vec, ouh_vec) / (np.linalg.norm(tuh_vec) * np.linalg.norm(ouh_vec)))
 
     match_scores["hobbies"] /= 3.0
 

@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FaMapMarkerAlt, FaGraduationCap, FaBriefcase, FaUserAlt, FaUniversity, FaHeart } from 'react-icons/fa';
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
+import { CLOUD_RUN_URL } from "@/utils/config";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -150,7 +151,7 @@ function MatchingPageContent() {
     
     // API 呼び出し例（エラーハンドリングも追加）
     try {
-      const response = await axios.get(`http://localhost:8080/matching_result?user_id=${userId}`); 
+      const response = await axios.get(`${CLOUD_RUN_URL}/matching_result?user_id=${userId}`); 
       const userIds = response.data.matches
         .map((match: any) => match.user_id)
         .join('&user_ids=');
