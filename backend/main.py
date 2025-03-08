@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import root, users, database, matching, slack, clustering
+from routes import root, users, database, matching, slack
 
 app = FastAPI()
 
@@ -15,11 +15,10 @@ app.add_middleware(
 
 # ルーターを追加
 app.include_router(root.router) # ルートに接続した時（いらない）
-# app.include_router(users.router) # データベースに登録されているユーザー情報を取得
+app.include_router(users.router) # データベースに登録されているユーザー情報を取得
 app.include_router(database.router) # データベースに関する操作
 app.include_router(matching.router) # マッチングに関する操作
 app.include_router(slack.router) # Slack に関する操作
-app.include_router(clustering.router) # クラスタリングに関する操作
 
 if __name__ == "__main__":
     import uvicorn

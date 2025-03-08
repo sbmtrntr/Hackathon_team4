@@ -2,9 +2,12 @@ from fastapi import APIRouter, HTTPException
 from supabase_client import supabase
 import requests
 from urllib.parse import urlencode
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 from config import SLACK_BOT_TOKEN
 
 router = APIRouter()
+client = WebClient(token=SLACK_BOT_TOKEN)
 
 @router.get("/check_email")
 def check_email(email: str):
@@ -46,3 +49,32 @@ def connect_dm(slack_id1: str, slack_id2: str):
     slack_dm_url = f"https://slack.com/app_redirect?{urlencode({'channel': channel_id})}"
 
     return {"URL": slack_dm_url}
+
+
+def create_slack_channel(channel_name):
+    """Slackのプライベートチャンネルを作成"""
+    try:
+        response = client.conversations_create(name=channel_name, is_private=True)
+        return response["channel"]["id"]
+    except SlackApiError as e:
+        print(f"Error creating channel: {e.response['error']}")
+        return None
+    
+
+def invite_users_to_channel(channel_id, user_ids):
+    """Slackチャンネルにユーザーを招待"""
+    try:
+        client.conversations_invite(channel=channel_id, users=user_ids)
+        print(f"Invited users {user_ids} to channel {channel_id}")
+    except SlackApiError as e:
+        print(f"Error inviting users: {e.response['error']}")
+
+
+# クラスタごとに Slack チャンネルを作成し、ユーザーを追加
+for cluster_id, group in df_processed.groupby("cluster"):
+    channel_name = f"group_{cluster_id}"
+    channel_id = create_slack_channel(channel_name)
+    
+    if channel_id:
+        user_ids = group["user_id"].tolist()  # Supabase の user_id を Slack のユーザーID に変換する処理が必要
+        invite_users_to_channel(channel_id, user_ids)

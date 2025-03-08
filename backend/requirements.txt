@@ -6,5 +6,6 @@ requests
 numpy
 pandas
 scikit-learn
+slack_sdk
 # scipy==1.10.1
 # gensim==3.8.3

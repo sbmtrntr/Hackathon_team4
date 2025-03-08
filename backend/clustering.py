@@ -1,10 +1,7 @@
-from fastapi import APIRouter
 from supabase_client import supabase
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MultiLabelBinarizer, OneHotEncoder
-
-router = APIRouter()
 
 def fetch_user_attributes():
     """user_attributes テーブルのデータを取得して DataFrame に変換"""
@@ -51,8 +48,6 @@ def clustering(df_user_attributes):
     return df_processed
 
 
-# データ取得
-@router.get("/clustering")
 def get_clustering_result():
     # ユーザー属性データを取得
     df_user_attributes = fetch_user_attributes()
@@ -60,4 +55,4 @@ def get_clustering_result():
     # クラスタリング
     df_clustered = clustering(df_user_attributes)
 
-    return {"clustered_data": "ok"}
+    return df_clustered
