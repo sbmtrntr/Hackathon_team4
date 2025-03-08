@@ -37,7 +37,7 @@ def clustering(df_user_attributes):
 
     # クラスタリング
     # クラスタリングに使用する特徴量
-    X = df_processed.drop(["user_id", "preferences"], axis=1)  # user_id は除外
+    X = df_processed.drop(["user_id", "preferences", "self_introductions"], axis=1)  # user_id は除外
 
     # K-means クラスタリング
     kmeans = KMeans(n_clusters=len(df_processed)//3, random_state=42)
