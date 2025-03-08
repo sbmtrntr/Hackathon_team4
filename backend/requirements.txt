@@ -4,5 +4,7 @@ supabase
 python-dotenv
 requests
 numpy
+pandas
+scikit-learn
 # scipy==1.10.1
 # gensim==3.8.3
