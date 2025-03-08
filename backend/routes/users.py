@@ -17,8 +17,3 @@ router = APIRouter()
 # def likes():
 #     response = supabase.table("likes").select("*").execute()
 #     return response
-
-# @router.get("/matches")
-# def matches():
-#     response = supabase.table("matches").select("*").execute()
-#     return response

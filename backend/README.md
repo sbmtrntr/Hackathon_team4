@@ -19,17 +19,15 @@
   - コマンドラインではなく、ブラウザで http://localhost:8080/~~ にアクセスしてもOK
 
 ```bash
-# 各テーブルの作成
-curl -X POST http://localhost:8080/create-users
-curl -X POST http://localhost:8080/create-user-attributes
-curl -X POST http://localhost:8080/create-likes
-curl -X POST http://localhost:8080/create-matches
-
 # 各テーブルの削除
 curl -X POST http://localhost:8080/drop-users
 curl -X POST http://localhost:8080/drop-user-attributes
 curl -X POST http://localhost:8080/drop-likes
-curl -X POST http://localhost:8080/drop-matches
+
+# 各テーブルの作成
+curl -X POST http://localhost:8080/create-users
+curl -X POST http://localhost:8080/create-user-attributes
+curl -X POST http://localhost:8080/create-likes
 
 # 各テーブルに架空データを挿入
 curl -X POST http://localhost:8080/insert-users
@@ -50,7 +48,4 @@ curl -X GET http://localhost:8080/user_attributes
 
 # likesテーブルの情報を取得
 curl -X GET http://localhost:8080/likes
-
-# matchesテーブルの情報を取得
-curl -X GET http://localhost:8080/matches
 ```
