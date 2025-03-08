@@ -43,8 +43,6 @@ def clustering(df_user_attributes):
     kmeans = KMeans(n_clusters=len(df_processed)//3, random_state=42)
     df_processed["cluster"] = kmeans.fit_predict(X)
 
-    # 各ユーザーのグループを確認
-    print(df_processed[["user_id", "cluster"]])
     return df_processed
 
 
@@ -65,3 +63,6 @@ def update_clustering_result():
     
     except Exception as e:
         return {"error": str(e)}
+    
+if __name__ == "__main__":
+    update_clustering_result()
