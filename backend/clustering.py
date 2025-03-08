@@ -48,11 +48,20 @@ def clustering(df_user_attributes):
     return df_processed
 
 
-def get_clustering_result():
+def update_clustering_result():
     # ユーザー属性データを取得
     df_user_attributes = fetch_user_attributes()
 
     # クラスタリング
     df_clustered = clustering(df_user_attributes)
 
-    return df_clustered
+    try:
+        # クラスタリング結果を Supabase に保存
+        for index, row in df_clustered.iterrows():
+            update_query = f"UPDATE users SET cluster = {row['cluster']} WHERE id = '{row['user_id']}';"
+            response = supabase.rpc("execute_sql", {"sql": update_query}).execute()
+
+        return {"message": "Clustering completed"}
+    
+    except Exception as e:
+        return {"error": str(e)}
