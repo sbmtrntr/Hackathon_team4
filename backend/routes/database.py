@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     slack_id VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     cluster INTEGER, -- クラスタリングのための列
     created_at DATE NOT NULL
 );
@@ -58,7 +58,7 @@ DROP_LIKES_SQL = "DROP TABLE IF EXISTS likes CASCADE;"
 
 # 各テーブルの架空データ挿入クエリ
 INSERT_USERS_SQL = """
-INSERT INTO users (name, email, slack_id, password_hash, cluster, created_at) VALUES
+INSERT INTO users (name, email, slack_id, password, cluster, created_at) VALUES
 ('鈴木 一郎', 'suzuki.ichiro@example.com', 'U11111111', crypt('securepassword1', gen_salt('bf')), NULL, '2023-03-01'),
 ('高橋 美咲', 'takahashi.misaki@example.com', 'U22222222', crypt('securepassword2', gen_salt('bf')), NULL, '2023-03-02'),
 ('佐藤 大輔', 'sato.daisuke@example.com', 'U33333333', crypt('securepassword3', gen_salt('bf')), NULL, '2023-03-03'),
