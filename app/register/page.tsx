@@ -1,171 +1,103 @@
 'use client';
 
+import { useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+import bcrypt from 'bcryptjs';
 import {
-  Box,
-  Button,
-  Container,
-  FormControl,
-  FormLabel,
-  Heading,
-  Input,
-  Select,
-  Stack,
-  Text,
-  VStack,
-  useColorModeValue,
-  Card,
-  CardBody,
-  CardHeader,
+  Box, Button, Container, FormControl, FormLabel,
+  Heading, Input, Stack, VStack, Card, CardBody, CardHeader
 } from '@chakra-ui/react';
 import { Users } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { CLOUD_RUN_URL } from "@/utils/config";
 
-const MBTI_TYPES = [
-  "INTJ", "INTP", "ENTJ", "ENTP",
-  "INFJ", "INFP", "ENFJ", "ENFP",
-  "ISTJ", "ISFJ", "ESTJ", "ESFJ",
-  "ISTP", "ISFP", "ESTP", "ESFP"
-];
-
-const ASSIGNMENT_TYPES = [
-  "公共", "金融", "法人", "TC&S","技統本"
-];
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    birthDate: "",
-    mbti: "",
-    assignment: "",
-    email: "",
-    password: "",
+    name: '',
+    email: '',
+    password: '',
   });
   const router = useRouter();
-  const bgColor = useColorModeValue('white', 'gray.700');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
-    router.push("/dashboard");
-  };
+    try{
+      const response = await axios.get(`${CLOUD_RUN_URL}/check_email?email=${formData.email}`);
+      const slack_id_n = response.data.slack_id;
+      const message = response.data.message;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+      // パスワードをハッシュ化
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(formData.password, salt);
+
+      // Supabase にユーザー登録
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{ name: formData.name, 
+                  email: formData.email, 
+                  slack_id: slack_id_n,
+                  password_hash: hashedPassword,
+                  created_at: new Date().toISOString()}])
+        .select('id')  // 挿入後にuser_idを取得
+        .single();
+      if (error) {
+        alert(`メールアドレス登録に失敗しました.既にメールアドレスを登録している可能性があります．`);
+        setFormData({ name: '', email: '', password: '' });
+        return;
+      }
+    // 2ページ目へ遷移 (user_idを渡す)
+    router.push(`/register/details?userId=${data.id}`);
+    }catch(e){
+      let errorMessage = "Slackワークスペースに登録したメールアドレスを入力してください．";
+      alert(errorMessage);
+      // フォームをリセット
+      setFormData({ name: '', email: '', password: '' });
+    }
   };
 
   return (
     <Box minH="100vh" py={12} px={4} bg="gray.50">
       <Container maxW="md">
-        <Card bg={bgColor} shadow="xl" borderRadius="xl">
+        <Card shadow="xl" borderRadius="xl">
           <CardHeader>
             <VStack spacing={4}>
               <Box display="flex" alignItems="center">
                 <Box as={Users} boxSize="8" color="blue.500" />
-                <Heading ml={2} size="lg">内定者マッチング</Heading>
+                <Heading ml={2} size="lg">アカウント登録</Heading>
               </Box>
-              <Heading size="md" textAlign="center">アカウント作成</Heading>
-              <Text color="gray.500" textAlign="center">
-                あなたのプロフィールを教えてください
-              </Text>
+              <Heading size="md">新規作成</Heading>
             </VStack>
           </CardHeader>
 
           <CardBody>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={4}>
-                <FormControl isRequired>
-                  <FormLabel>お名前</FormLabel>
-                  <Input
-                    name="name"
-                    placeholder="Data 太郎"
-                    value={formData.name}
-                    onChange={handleChange}
-                  />
-                </FormControl>
+            <Suspense>
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={4}>
+                  <FormControl isRequired>
+                    <FormLabel>お名前</FormLabel>
+                    <Input name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel>生年月日</FormLabel>
-                  <Input
-                    name="birthDate"
-                    type="date"
-                    value={formData.birthDate}
-                    onChange={handleChange}
-                  />
-                </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Email</FormLabel>
+                    <Input name="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                  </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel>MBTI Type</FormLabel>
-                  <Select
-                    name="mbti"
-                    placeholder="MBTIのタイプは?"
-                    value={formData.mbti}
-                    onChange={handleChange}
-                  >
-                    {MBTI_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Password</FormLabel>
+                    <Input name="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel>配属</FormLabel>
-                  <Select
-                    name="assignment"
-                    placeholder="配属先は？"
-                    value={formData.assignment}
-                    onChange={handleChange}
-                  >
-                    {ASSIGNMENT_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormLabel>Email</FormLabel>
-                  <Input
-                    name="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormLabel>Password</FormLabel>
-                  <Input
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                </FormControl>
-
-                <Button
-                  type="submit"
-                  colorScheme="blue"
-                  size="lg"
-                  w="full"
-                >
-                  Create Account
-                </Button>
-
-                <Text textAlign="center" fontSize="sm" color="gray.500">
-                  Already have an account?{" "}
-                  <Link href="/login" style={{ color: 'blue', textDecoration: 'underline' }}>
-                    Sign in
-                  </Link>
-                </Text>
-              </Stack>
-            </form>
+                  <Button type="submit" colorScheme="blue" size="lg" w="full">次へ</Button>
+                </Stack>
+              </form>
+            </Suspense>
           </CardBody>
         </Card>
       </Container>

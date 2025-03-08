@@ -1,0 +1,1 @@
+export const CLOUD_RUN_URL = process.env.NEXT_PUBLIC_CLOUD_RUN_URL as string;
