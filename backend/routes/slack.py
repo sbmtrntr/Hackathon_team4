@@ -123,7 +123,7 @@ def invite_user_to_slack(user_id: str):
 
 
 @router.get("/join_slack_bot")
-def join_slack_bot(id: str):
+def join_slack_bot(id: str, common_point: str):
     headers = {"Authorization": f"Bearer {SLACK_BOT_TOKEN}"}
     
     # チャンネル名を指定してチャンネルIDを取得
@@ -141,7 +141,6 @@ def join_slack_bot(id: str):
         raise HTTPException(status_code=500, detail="Failed to join the channel")
 
     # メッセージを送信
-    common_point = "趣味"
     message_payload = {
         "channel": channel_id,
         "text": f"""
