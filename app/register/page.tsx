@@ -32,17 +32,13 @@ export default function RegisterPage() {
       const slack_id_n = response.data.slack_id;
       const message = response.data.message;
 
-      // パスワードをハッシュ化
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(formData.password, salt);
-
       // Supabase にユーザー登録
       const { data, error } = await supabase
         .from('users')
         .insert([{ name: formData.name, 
                   email: formData.email, 
                   slack_id: slack_id_n,
-                  password_hash: hashedPassword,
+                  password: formData.password,
                   created_at: new Date().toISOString()}])
         .select('id')  // 挿入後にuser_idを取得
         .single();

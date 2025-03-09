@@ -35,7 +35,7 @@ const MatchingPageContent = () => {
             const userIds = response.data.matches
               .map((match: any) => match.user_id)
               .join('&user_ids=');
-            router.push(`/result?user_ids=${userIds}`);
+            router.push(`/result?userId=${userId}&user_ids=${userIds}`);
           } catch (error) {
             console.error('Error fetching matching results:', error);
           }
