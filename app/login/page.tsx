@@ -35,7 +35,6 @@ export default function CheckEmail() {
 
       if (error || !users) {
         setMessage("メールアドレスが間違っているか，登録されていません．");
-        alert(password);
         setEmail("");
         setPassword("");
         return;

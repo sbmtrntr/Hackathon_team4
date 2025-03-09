@@ -124,7 +124,6 @@ function SearchParamsWrapper({ router }: { router: any }) {
       }]);
 
     if (error) {
-      alert(formData.preferences);
       alert("登録に失敗しました。");
       return;
     }
