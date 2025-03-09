@@ -10,7 +10,6 @@ import {
   TagCloseButton, Grid, GridItem, Icon, Tooltip
 } from "@chakra-ui/react";
 import { FaUser, FaBriefcase, FaMapMarkerAlt, FaUniversity, FaHeart, FaPen } from "react-icons/fa";
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -45,10 +44,12 @@ const PREFERENCES = [
 export default function RegisterDetailsPage() {
   const router = useRouter();
 
-  // ここではSuspenseを削除し、SearchParamsWrapperを直接使用
-  <Suspense fallback={<div>Loading...</div>}>
-    <SearchParamsWrapper router={router} />
-  </Suspense>
+  // Wrap useSearchParams() inside Suspense
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchParamsWrapper router={router} />
+    </Suspense>
+  );
 }
 
 function SearchParamsWrapper({ router }: { router: any }) {
@@ -74,14 +75,13 @@ function SearchParamsWrapper({ router }: { router: any }) {
     preferences: '',
     self_introductions: ''
   });
-
+  //一旦，コメントアウト
   useEffect(() => {
     if (!userId) {
       alert("ユーザーIDが見つかりません。");
       router.push('/register');
     }
   }, [userId, router]);
-
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -93,14 +93,14 @@ function SearchParamsWrapper({ router }: { router: any }) {
     }));
   }, []);
 
-  const handleHobbyToggle = (hobby: any) => {
+  const handleHobbyToggle = (hobby:any) => {
     setFormData((prev) => ({
       ...prev,
       hobbies: prev.hobbies.includes(hobby)
         ? prev.hobbies.filter((h) => h !== hobby)
         : prev.hobbies.length < 3
-        ? [...prev.hobbies, hobby]
-        : prev.hobbies
+          ? [...prev.hobbies, hobby]
+          : prev.hobbies
     }));
   };
 
@@ -124,6 +124,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
       }]);
 
     if (error) {
+      alert(formData.preferences);
       alert("登録に失敗しました。");
       return;
     }
@@ -216,28 +217,58 @@ function SearchParamsWrapper({ router }: { router: any }) {
                     value={formData.hometown}
                     onChange={(e) => setFormData({ ...formData, hometown: e.target.value })}
                   >
-                    {PREFECTURES.map((pref) => (
-                      <option key={pref} value={pref}>{pref}</option>
+                    {PREFECTURES.map((prefecture) => (
+                      <option key={prefecture} value={prefecture}>{prefecture}</option>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* 出身校 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaUniversity} mr={2} /> 出身校</FormLabel>
+                  <Input
+                    type="text"
+                    name="almaMater"
+                    value={formData.almaMater}
+                    onChange={(e) => setFormData({ ...formData, almaMater: e.target.value })}
+                    placeholder="大学名を入力"
+                  />
+                </FormControl>
+
+                {/* 重視する項目 */}
+                <FormControl isRequired>
+                  <FormLabel><Icon as={FaPen} mr={2} /> 重視する項目</FormLabel>
+                  <Select
+                    name="preferences"
+                    value={formData.preferences}
+                    onChange={(e) => setFormData({ ...formData, preferences: e.target.value })}
+                  >
+                    {PREFERENCES.map((preference) => (
+                      <option key={preference} value={preference}>{preference}</option>
                     ))}
                   </Select>
                 </FormControl>
 
                 {/* 自己紹介 */}
-                <FormControl>
-                  <FormLabel><Icon as={FaPen} mr={2} /> 自己紹介</FormLabel>
+                <FormControl isRequired>
+                  <FormLabel>自己紹介</FormLabel>
                   <Textarea
                     name="self_introductions"
                     value={formData.self_introductions}
                     onChange={(e) => setFormData({ ...formData, self_introductions: e.target.value })}
-                    placeholder="自分を紹介してみましょう！"
+                    placeholder="自己紹介文を入力してください"
                   />
                 </FormControl>
 
+                {/* 登録完了ボタン */}
                 <Button
+                  type="submit"
                   colorScheme="blue"
                   size="lg"
-                  type="submit">
-                  登録する
+                  w="full"
+                  _hover={{ bg: "blue.600" }}
+                >
+                  登録完了
                 </Button>
               </Stack>
             </form>

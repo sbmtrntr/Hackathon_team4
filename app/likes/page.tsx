@@ -26,12 +26,6 @@ type UserAttributes = {
   name?: string; // nameを追加
 };
 
-type User = {
-  id: string;
-  name: string;
-  slack_id: string;
-};
-
 const LikesPage = () => {
   return (
     <Center mt={10}>
@@ -46,7 +40,7 @@ const LikesPageContent = () => {
   const [likedUsers, setLikedUsers] = useState<UserAttributes[]>([]);
   const [mySlackId, setMySlackId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const searchParams = useSearchParams();  // ← Suspense で囲まないとエラーが出る
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setUserId(searchParams.get("userId"));
@@ -92,7 +86,6 @@ const LikesPageContent = () => {
         return;
       }
 
-      // usersからnameを取得
       const { data: userNames, error: userNamesError } = await supabase
         .from("users")
         .select("id, name")
@@ -121,7 +114,7 @@ const LikesPageContent = () => {
       const likedMeIds = likedMe.map((like) => like.user_id);
       const enrichedUsers = users.map((user) => ({
         ...user,
-        name: nameMap[user.user_id], // nameを追加
+        name: nameMap[user.user_id],
         isMatched: likedMeIds.includes(user.user_id),
       }));
 
@@ -152,18 +145,60 @@ const LikesPageContent = () => {
 
     try {
       const response = await axios.get(`${CLOUD_RUN_URL}/connect_dm?slack_id1=${mySlackId}&slack_id2=${targetSlackId}`);
+      const response_common = await axios.get(`${CLOUD_RUN_URL}/common_attributes?user_id1=${userId}&user_id2=${user.user_id}`);
+      const response_bot = await axios.get(`${CLOUD_RUN_URL}/send-greeting?user1_slack_id=${mySlackId}&user2_slack_id=${targetSlackId}&common_point=出身地`);
+      
       if (response.status === 200) {
         window.location.href = response.data.URL;
       } else {
         console.error("Slack リダイレクトエラー:", response.data);
       }
+      
+      if (response_bot.status == 422) {
+        window.location.href = response_bot.data.URL;
+      }
     } catch (error) {
       console.error("Slack API エラー:", error);
+    }    
+  };
+
+  const handleChannelRedirect = async () => {
+    if (!userId) {
+      console.error("userIdが取得できていません");
+      return;
+    }
+
+    try {
+      const { data: data, error: error } = await supabase
+      .from("users")
+      .select("cluster")
+      .eq("id", userId)
+      .single();
+
+      const response = await axios.get(`${CLOUD_RUN_URL}/invite?user_id=${userId}`);
+      const response_join = await axios.get(`${CLOUD_RUN_URL}/join_slack_bot?id=${data?.cluster}&common_point=出身地`);
+      if (response.status === 200) {
+        window.location.href = response.data.URL;
+      } else {
+        console.error("チャンネルリダイレクトエラー:", response.data);
+      }
+    } catch (error) {
+      console.error("APIエラー:", error);
     }
   };
 
   return (
     <VStack spacing={6}>
+      <Button 
+        onClick={handleChannelRedirect} 
+        textColor="white"
+        bg="#235180" 
+        size="sm" 
+        alignSelf="flex-start"
+      >
+        チャンネルへ移行
+      </Button>
+      
       <Box maxW="lg" mx="auto" bg="white" boxShadow="lg" borderRadius="lg" p={6} textAlign="center">
         <Heading as="h1" size="md" color="gray.800" borderBottom="2px solid" pb={2}>
           いいねしたユーザ
@@ -191,7 +226,8 @@ const LikesPageContent = () => {
                 </Box>
                 <Box fontSize="md" color="gray.600" pl={6} textAlign="left">
                   <Text fontSize="2xl" fontWeight="bold" color="blue.600" borderBottom="2px solid #235180">
-                    名前: {user.name}</Text> {/* 名前の表示を追加 */}
+                    名前: {user.name}
+                  </Text>
                   <Text>🎭 MBTI: {user.mbti}</Text>
                   <Text>🏠 出身地: {user.hometown}</Text>
                   <Text>🏢 志望分野: {user.field}</Text>
