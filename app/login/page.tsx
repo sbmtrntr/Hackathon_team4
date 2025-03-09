@@ -117,11 +117,6 @@ export default function CheckEmail() {
                   </Box>
                 </Link>
               </Text>
-              <Link href="/forgot_password" passHref>
-                <Box as="span" fontSize="sm" color="gray.500" _hover={{ textDecoration: 'underline' }}>
-                  パスワードをお忘れですか？
-                </Box>
-              </Link>
             </Stack>
           </CardFooter>
         </Card>
