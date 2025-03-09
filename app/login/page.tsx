@@ -35,7 +35,6 @@ export default function CheckEmail() {
 
       if (error || !users) {
         setMessage("メールアドレスが間違っているか，登録されていません．");
-        alert(password);
         setEmail("");
         setPassword("");
         return;
@@ -118,11 +117,6 @@ export default function CheckEmail() {
                   </Box>
                 </Link>
               </Text>
-              <Link href="/forgot_password" passHref>
-                <Box as="span" fontSize="sm" color="gray.500" _hover={{ textDecoration: 'underline' }}>
-                  パスワードをお忘れですか？
-                </Box>
-              </Link>
             </Stack>
           </CardFooter>
         </Card>
