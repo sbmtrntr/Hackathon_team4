@@ -1,13 +1,13 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
 import {
   Center, VStack, Box, Heading, Text, List, ListItem, Button, Badge, Wrap, WrapItem
 } from "@chakra-ui/react";
 import { useSearchParams } from "next/navigation";
-import router from "next/router";
 import { CLOUD_RUN_URL } from "@/utils/config";
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -21,18 +21,35 @@ type UserAttributes = {
   role: string;
   mbti: string;
   alma_mater: string;
+  self_introductions: string;
   isMatched: boolean;
 };
 
 const LikesPage = () => {
+  return (
+    <Center mt={10}>
+      <Suspense fallback={<p>Loading...</p>}>
+        <LikesPageContent />
+      </Suspense>
+    </Center>
+  );
+};
+
+// `useSearchParams()` を使う部分を `Suspense` 内に移動
+const LikesPageContent = () => {
   const [likedUsers, setLikedUsers] = useState<UserAttributes[]>([]);
-  //const [userId, setUserId] = useState<string | null>(null);
   const [mySlackId, setMySlackId] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const userId = searchParams.get('userId');
+  const [userId, setUserId] = useState<string | null>(null);
+  const searchParams = useSearchParams();  // ← Suspense で囲まないとエラーが出る
+
   useEffect(() => {
+    setUserId(searchParams.get("userId"));
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!userId) return;
+
     const fetchLikedUsers = async () => {
-      // 自分の Slack ID を取得
       const { data: myUserData, error: myUserError } = await supabase
         .from("users")
         .select("slack_id")
@@ -45,7 +62,6 @@ const LikesPage = () => {
       }
       setMySlackId(myUserData.slack_id);
 
-      // Likesテーブルから自身がいいねしたtarget_user_idを取得
       const { data: likes, error: likesError } = await supabase
         .from("likes")
         .select("target_user_id")
@@ -58,13 +74,11 @@ const LikesPage = () => {
 
       if (likes.length === 0) return;
 
-      // いいねしたユーザーのID一覧
       const targetUserIds = likes.map((like) => like.target_user_id);
 
-      // target_user_idをもとにuser_attributesテーブルを検索
       const { data: users, error: usersError } = await supabase
         .from("user_attributes")
-        .select("user_id, hobbies, hometown, field, role, mbti, alma_mater")
+        .select("user_id, hobbies, hometown, field, role, mbti, alma_mater, self_introductions")
         .in("user_id", targetUserIds);
 
       if (usersError) {
@@ -72,21 +86,18 @@ const LikesPage = () => {
         return;
       }
 
-      // 自分をいいねしたユーザーを取得（マッチングチェック用）
       const { data: likedMe, error: likedMeError } = await supabase
         .from("likes")
         .select("user_id")
-        .eq("target_user_id", userId); // 自分をいいねした人を取得
+        .eq("target_user_id", userId);
 
       if (likedMeError) {
         console.error("マッチング判定のエラー:", likedMeError);
         return;
       }
 
-      // いいねされたユーザーのID一覧
       const likedMeIds = likedMe.map((like) => like.user_id);
 
-      // マッチしているユーザーには isMatched: true を追加
       const enrichedUsers = users.map((user) => ({
         ...user,
         isMatched: likedMeIds.includes(user.user_id),
@@ -96,7 +107,7 @@ const LikesPage = () => {
     };
 
     fetchLikedUsers();
-  }, []);
+  }, [userId]);
 
   const handleSlackRedirect = async (user: UserAttributes) => {
     if (!mySlackId) {
@@ -104,7 +115,6 @@ const LikesPage = () => {
       return;
     }
 
-    // 相手の Slack ID を取得
     const { data: targetUserData, error: targetUserError } = await supabase
       .from("users")
       .select("slack_id")
@@ -121,7 +131,7 @@ const LikesPage = () => {
     try {
       const response = await axios.get(`${CLOUD_RUN_URL}/connect_dm?slack_id1=${mySlackId}&slack_id2=${targetSlackId}`);
       if (response.status === 200) {
-        window.location.href = response.data.URL; // Slack のリダイレクト URL に移動
+        window.location.href = response.data.URL;
       } else {
         console.error("Slack リダイレクトエラー:", response.data);
       }
@@ -131,59 +141,58 @@ const LikesPage = () => {
   };
 
   return (
-    <Center mt={10}>
-      <VStack spacing={6}>
-        <Box maxW="lg" mx="auto" bg="white" boxShadow="lg" borderRadius="lg" p={6} textAlign="center">
-          <Heading as="h1" size="md" color="gray.800" borderBottom="2px solid" pb={2}>
-            いいねしたユーザ
-          </Heading>
-          <List bg="gray.100" borderRadius="lg" p={4} boxShadow="md" mt={4} spacing={3}>
-            {likedUsers.length === 0 ? (
-              <Text color="gray.600">いいねしたユーザーがいません</Text>
-            ) : (
-              likedUsers.map((user) => (
-                <ListItem key={user.user_id} fontSize="xl" fontWeight="semibold" color="gray.800" p={4} borderLeft="4px solid" borderColor="blue.500">
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <VStack align="start">
-                      {user.isMatched && <Badge colorScheme="orange">マッチしています</Badge>}
-                    </VStack>
-                    {user.isMatched && (
-                      <Button
-                        onClick={() => handleSlackRedirect(user)}
-                        textColor="white"
-                        bg="#235180"
-                        size="sm"
-                      >
-                        Slackで話す
-                      </Button>
-                    )}
-                  </Box>
-                  <Box fontSize="md" color="gray.600" pl={6} textAlign="left">
-                    <Text>🎭 MBTI: {user.mbti}</Text>
-                    <Text>🏠 出身地: {user.hometown}</Text>
-                    <Text>🏢 志望分野: {user.field}</Text>
-                    <Text>💼 志望役割: {user.role}</Text>
-                    <Text>🎓 出身大学: {user.alma_mater}</Text>
-                    <Text fontWeight="bold" mt={2}>🎨 趣味</Text>
-                    <Wrap mt={1}>
-                      {user.hobbies.split(", ").map((hobby, index) => (
-                        <WrapItem key={index}>
-                          <Badge colorScheme="blue" px={2} py={1} borderRadius="md">
-                            {hobby}
-                          </Badge>
-                        </WrapItem>
-                      ))}
-                    </Wrap>
-                  </Box>
-                </ListItem>
-              ))
-            )}
-          </List>
-        </Box>
-      </VStack>
-    </Center>
+    <VStack spacing={6}>
+      <Box maxW="lg" mx="auto" bg="white" boxShadow="lg" borderRadius="lg" p={6} textAlign="center">
+        <Heading as="h1" size="md" color="gray.800" borderBottom="2px solid" pb={2}>
+          いいねしたユーザ
+        </Heading>
+        <List bg="gray.100" borderRadius="lg" p={4} boxShadow="md" mt={4} spacing={3}>
+          {likedUsers.length === 0 ? (
+            <Text color="gray.600">いいねしたユーザーがいません</Text>
+          ) : (
+            likedUsers.map((user) => (
+              <ListItem key={user.user_id} fontSize="xl" fontWeight="semibold" color="gray.800" p={4} borderLeft="4px solid" borderColor="blue.500">
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <VStack align="start">
+                    {user.isMatched && <Badge colorScheme="orange">マッチしています</Badge>}
+                  </VStack>
+                  {user.isMatched && (
+                    <Button
+                      onClick={() => handleSlackRedirect(user)}
+                      textColor="white"
+                      bg="#235180"
+                      size="sm"
+                    >
+                      Slackで話す
+                    </Button>
+                  )}
+                </Box>
+                <Box fontSize="md" color="gray.600" pl={6} textAlign="left">
+                  <Text>🎭 MBTI: {user.mbti}</Text>
+                  <Text>🏠 出身地: {user.hometown}</Text>
+                  <Text>🏢 志望分野: {user.field}</Text>
+                  <Text>💼 志望役割: {user.role}</Text>
+                  <Text>🎓 出身大学: {user.alma_mater}</Text>
+                  <Text fontWeight="bold" mt={2}>🎨 趣味</Text>
+                  <Wrap mt={1}>
+                    {user.hobbies.split(", ").map((hobby, index) => (
+                      <WrapItem key={index}>
+                        <Badge colorScheme="blue" px={2} py={1} borderRadius="md">
+                          {hobby}
+                        </Badge>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                  <Text fontWeight="bold" mt={3}>📝 自己紹介</Text>
+                  <Text color="gray.700" mt={1}>{user.self_introductions}</Text>
+                </Box>
+              </ListItem>
+            ))
+          )}
+        </List>
+      </Box>
+    </VStack>
   );
-}
+};
 
 export default LikesPage;
-

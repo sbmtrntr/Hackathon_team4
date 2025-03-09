@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import {
   Center, VStack, Box, Heading, Text, List, ListItem, Button, Badge,
-  Icon, Wrap, WrapItem, Textarea
+  Icon, Wrap, WrapItem, Textarea,
+  Spacer
 } from "@chakra-ui/react";
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 import { createClient } from "@supabase/supabase-js";
@@ -22,6 +23,7 @@ type User_attributes = {
   alma_mater: string;
   preferences: string;
   hometown: string;
+  self_introductions: string;
   name?: string;
 };
 
@@ -54,7 +56,7 @@ const MatchingResult = () => {
       if (userIds.length > 0) {
         const { data, error } = await supabase
           .from("user_attributes")
-          .select("user_id, hometown, hobbies, field, role, mbti, alma_mater, preferences")
+          .select("user_id, hometown, hobbies, field, role, mbti, alma_mater, preferences, self_introductions")
           .in("user_id", userIds);
 
         if (error) {
@@ -117,8 +119,8 @@ const MatchingResult = () => {
     <Center mt={10}>
       <VStack spacing={6}>
         <Box maxW="lg" bg="white" boxShadow="lg" borderRadius="lg" p={6}>
-          <Heading as="h1" size="xl" color="gray.800">🎉 マッチング結果 🎉</Heading>
-          <Text fontSize="lg" color="gray.700" mt={4}>
+        <Heading as="h1" size="xl" color="gray.800" textAlign="center">🎉 マッチング結果 🎉</Heading>
+          <Text fontSize="lg" color="gray.700" textAlign="center">
             あなたにぴったりなユーザーを見つけました！
           </Text>
           <List spacing={3}>
@@ -126,14 +128,19 @@ const MatchingResult = () => {
               const user = users.find((u) => u.id === user_attributes.user_id);
               return user ? (
                 <ListItem key={user_attributes.user_id} p={4} borderLeft="4px solid blue">
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Button onClick={() => handleLike(user_attributes.user_id)}>
-                      <Icon
-                        as={likes[user_attributes.user_id]?.liked ? AiFillHeart : AiOutlineHeart}
-                        color={likes[user_attributes.user_id]?.liked ? "red.400" : "gray.500"}
-                      />
-                      {likes[user_attributes.user_id]?.liked ? "いいね済" : "いいね"}
-                    </Button>
+                  <Box display="flex" alignItems="center" width="100%">
+                    {/* 名前といいねボタンを横並びにする */}
+                      <Text fontSize="2xl" fontWeight="bold" color="blue.600" borderBottom="2px solid #235180">
+                        名前: {user.name}
+                      </Text>
+                      <Spacer />
+                      <Button onClick={() => handleLike(user_attributes.user_id)}>
+                        <Icon
+                          as={likes[user_attributes.user_id]?.liked ? AiFillHeart : AiOutlineHeart}
+                          color={likes[user_attributes.user_id]?.liked ? "red.400" : "gray.500"}
+                        />
+                        {likes[user_attributes.user_id]?.liked ? "いいね済" : "いいね"}
+                      </Button>
                   </Box>
 
                   <Box>
@@ -149,6 +156,8 @@ const MatchingResult = () => {
                         </WrapItem>
                       ))}
                     </Wrap>
+                    <Text fontWeight="bold" mt={3}>📝 自己紹介</Text>
+                    <Text color="gray.700" mt={1}>{user_attributes.self_introductions}</Text>
                   </Box>
 
                   {likes[user_attributes.user_id]?.liked && (
