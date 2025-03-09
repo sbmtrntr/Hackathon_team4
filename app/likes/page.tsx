@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useEffect, Suspense } from "react";
 import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
@@ -23,6 +23,13 @@ type UserAttributes = {
   alma_mater: string;
   self_introductions: string;
   isMatched: boolean;
+  name?: string; // nameを追加
+};
+
+type User = {
+  id: string;
+  name: string;
+  slack_id: string;
 };
 
 const LikesPage = () => {
@@ -35,7 +42,6 @@ const LikesPage = () => {
   );
 };
 
-// `useSearchParams()` を使う部分を `Suspense` 内に移動
 const LikesPageContent = () => {
   const [likedUsers, setLikedUsers] = useState<UserAttributes[]>([]);
   const [mySlackId, setMySlackId] = useState<string | null>(null);
@@ -86,6 +92,22 @@ const LikesPageContent = () => {
         return;
       }
 
+      // usersからnameを取得
+      const { data: userNames, error: userNamesError } = await supabase
+        .from("users")
+        .select("id, name")
+        .in("id", targetUserIds);
+
+      if (userNamesError) {
+        console.error("usersテーブルの取得エラー:", userNamesError);
+        return;
+      }
+
+      const nameMap = userNames.reduce((acc, user) => {
+        acc[user.id] = user.name;
+        return acc;
+      }, {} as Record<string, string>);
+
       const { data: likedMe, error: likedMeError } = await supabase
         .from("likes")
         .select("user_id")
@@ -97,9 +119,9 @@ const LikesPageContent = () => {
       }
 
       const likedMeIds = likedMe.map((like) => like.user_id);
-
       const enrichedUsers = users.map((user) => ({
         ...user,
+        name: nameMap[user.user_id], // nameを追加
         isMatched: likedMeIds.includes(user.user_id),
       }));
 
@@ -168,6 +190,8 @@ const LikesPageContent = () => {
                   )}
                 </Box>
                 <Box fontSize="md" color="gray.600" pl={6} textAlign="left">
+                  <Text fontSize="2xl" fontWeight="bold" color="blue.600" borderBottom="2px solid #235180">
+                    名前: {user.name}</Text> {/* 名前の表示を追加 */}
                   <Text>🎭 MBTI: {user.mbti}</Text>
                   <Text>🏠 出身地: {user.hometown}</Text>
                   <Text>🏢 志望分野: {user.field}</Text>
