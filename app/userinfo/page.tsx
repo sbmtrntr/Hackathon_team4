@@ -40,11 +40,11 @@ export default function UserInfoEditPage() {
         .eq('name', formData.name)
         .eq('email',formData.email)
         //passwordの認証で引っかかる
-        //.eq('password_hash',hashedPassword)
+        .eq('password',formData.password)
         .single();
       if (error) {
         alert(`認証に失敗しました.間違ったメールアドレスやパスワードを入力している可能性があります．`);
-        alert(hashedPassword);
+        //alert(hashedPassword);
         setFormData({ name: '', email: '', password: '' });
         return;
       }

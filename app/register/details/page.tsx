@@ -76,12 +76,12 @@ function SearchParamsWrapper({ router }: { router: any }) {
     self_introductions: ''
   });
   //一旦，コメントアウト
-  /*useEffect(() => {
+  useEffect(() => {
     if (!userId) {
       alert("ユーザーIDが見つかりません。");
       router.push('/register');
     }
-  }, [userId, router]);*/
+  }, [userId, router]);
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -130,7 +130,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
     }
 
     alert("プロフィールが完成しました！");
-    router.push('/matching');
+    router.push(`/matching?userId=${userId}`);
   };
 
   return (

@@ -28,24 +28,17 @@ export default function CheckEmail() {
       // 🔹 Supabase からユーザー情報を取得
       const { data: users, error } = await supabase
         .from("users")
-        .select("id, email, password_hash")
+        .select("id, email, password")
         .eq("email", email)
+        .eq("password",password)
         .single(); // 1件だけ取得
 
       if (error || !users) {
         setMessage("メールアドレスが間違っているか，登録されていません．");
-        alert(message);
         setEmail("");
         setPassword("");
         return;
       }
-      // 🔹 入力パスワードとハッシュを比較
-      const isMatch = await bcrypt.compare(password, users.password_hash);
-      if (!isMatch) {
-        setMessage("パスワードが正しくありません");
-        return;
-      }
-
       // 🔹 ログイン成功 → ダッシュボードへ遷移
       const queryString = new URLSearchParams({ userId: users.id }).toString();
       router.push(`/likes?${queryString}`);
@@ -124,11 +117,6 @@ export default function CheckEmail() {
                   </Box>
                 </Link>
               </Text>
-              <Link href="/forgot_password" passHref>
-                <Box as="span" fontSize="sm" color="gray.500" _hover={{ textDecoration: 'underline' }}>
-                  パスワードをお忘れですか？
-                </Box>
-              </Link>
             </Stack>
           </CardFooter>
         </Card>

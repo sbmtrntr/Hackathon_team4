@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-  Center, VStack, Box, Heading, Text, List, ListItem, ListIcon, Button, Badge,
-  Icon, Wrap, WrapItem
+  Center, VStack, Box, Heading, Text, List, ListItem, Button, Badge,
+  Icon, Wrap, WrapItem, Textarea,
+  Spacer
 } from "@chakra-ui/react";
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 import { createClient } from "@supabase/supabase-js";
@@ -12,7 +13,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// ユーザーの型を定義
+// ユーザーの型定義
 type User_attributes = {
   user_id: string;
   hobbies: string;
@@ -21,8 +22,9 @@ type User_attributes = {
   mbti: string;
   alma_mater: string;
   preferences: string;
-  hometown: string; // hometownを追加
-  name?: string;  // nameはSupabaseから取得していない場合があるのでオプショナルに
+  hometown: string;
+  self_introductions: string;
+  name?: string;
 };
 
 type User = {
@@ -31,42 +33,49 @@ type User = {
   slack_id: string;
 };
 
+type LikeState = {
+  [key: string]: { liked: boolean; reason: string };
+};
+
 const MatchingResult = () => {
   const [users_attributes, setUsersA] = useState<User_attributes[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [likes, setLikes] = useState<{ [key: string]: boolean }>({});
-  
+  const [likes, setLikes] = useState<LikeState>({});
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+
   useEffect(() => {
     const fetchData = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const userIds = urlParams.getAll("user_ids");  // user_idsが配列で取得される
-      console.log(userIds);  // user_idsの取得確認
+      const userId = urlParams.get("userId") || "";
+      const userIds = urlParams.getAll("user_ids");
+
+      if (userId) {
+        setCurrentUserId(userId);
+      }
 
       if (userIds.length > 0) {
-        // user_idsがカンマ区切りで取得されるので、配列として処理する
         const { data, error } = await supabase
-          .from('user_attributes')
-          .select('user_id, hometown, hobbies, field, role, mbti, alma_mater, preferences, self_introductions')
-          .in('user_id', userIds);  // .in()メソッドで複数のuser_idを指定
-        
+          .from("user_attributes")
+          .select("user_id, hometown, hobbies, field, role, mbti, alma_mater, preferences, self_introductions")
+          .in("user_id", userIds);
+
         if (error) {
-          console.log('Error fetching user attributes:', error);
+          console.log("Error fetching user attributes:", error);
           alert(error);
         } else {
-          setUsersA(data);  // データをstateにセット
+          setUsersA(data);
         }
 
-        // usersテーブルも同様に取得
         const { data: usersData, error: usersError } = await supabase
-          .from('users')
-          .select('id, name, slack_id')
-          .in('id', userIds);  // .in()メソッドで複数のuser_idを指定
-        
+          .from("users")
+          .select("id, name, slack_id")
+          .in("id", userIds);
+
         if (usersError) {
-          console.log('Error fetching users:', usersError);
+          console.log("Error fetching users:", usersError);
           alert(usersError);
         } else {
-          setUsers(usersData);  // ユーザー情報をstateにセット
+          setUsers(usersData);
         }
       }
     };
@@ -74,87 +83,97 @@ const MatchingResult = () => {
     fetchData();
   }, []);
 
-  const toggleLike = (userId: string) => {
+  const handleLike = (targetUserId: string) => {
     setLikes((prevLikes) => ({
       ...prevLikes,
-      [userId]: !prevLikes[userId]
+      [targetUserId]: { liked: !prevLikes[targetUserId]?.liked, reason: "" },
     }));
-    // Call an API to save the like state here
+  };
+
+  const handleReasonChange = (targetUserId: string, reason: string) => {
+    setLikes((prevLikes) => ({
+      ...prevLikes,
+      [targetUserId]: { ...prevLikes[targetUserId], reason },
+    }));
+  };
+
+  const submitLike = async (targetUserId: string) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get("userId") || "";
+    if (!userId || !likes[targetUserId]?.reason) return;
+
+    const { error } = await supabase.from("likes").insert([
+      { user_id: userId, target_user_id: targetUserId, reasons: likes[targetUserId].reason },
+    ]);
+
+    if (error) {
+      console.log("Error saving like:", error);
+      //alert(error.message);
+      alert("いいねの保存に失敗しました。");
+    } else {
+      alert("いいねを保存しました！");
+    }
   };
 
   return (
     <Center mt={10}>
       <VStack spacing={6}>
-        <Box
-          maxW="lg"
-          mx="auto"
-          bg="white"
-          boxShadow="lg"
-          borderRadius="lg"
-          p={6}
-          textAlign="center"
-        >
-          <Heading as="h1" size="xl" color="gray.800" borderBottom="2px solid" pb={2}>
-            🎉 マッチング結果 🎉
-          </Heading>
-          <Text fontSize="lg" color="gray.700" mt={4}>
+        <Box maxW="lg" bg="white" boxShadow="lg" borderRadius="lg" p={6}>
+        <Heading as="h1" size="xl" color="gray.800" textAlign="center">🎉 マッチング結果 🎉</Heading>
+          <Text fontSize="lg" color="gray.700" textAlign="center">
             あなたにぴったりなユーザーを見つけました！
           </Text>
-          <List bg="gray.100" borderRadius="lg" p={4} boxShadow="md" mt={4} spacing={3}>
+          <List spacing={3}>
             {users_attributes.map((user_attributes) => {
-              const user = users.find(u => u.id === user_attributes.user_id);  // `user_attributes.user_id` に対応するユーザー情報を取得
+              const user = users.find((u) => u.id === user_attributes.user_id);
               return user ? (
-                <ListItem
-                  key={user_attributes.user_id}
-                  fontSize="xl"
-                  fontWeight="semibold"
-                  color="gray.800"
-                  p={4}
-                  borderLeft="4px solid"
-                  borderColor="blue.500"
-                  display="flex"
-                  flexDirection="column"
-                  alignItems="start"
-                  gap={2}
-                >
-                  <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
-                    <Button
-                      onClick={() => toggleLike(user_attributes.user_id)}
-                      textColor="white"
-                      bg="#FF9800"
-                      size="sm"
-                      _hover={{ bg: "#FF9800", transform: "scale(1.05)" }}
-                      leftIcon={
+                <ListItem key={user_attributes.user_id} p={4} borderLeft="4px solid blue">
+                  <Box display="flex" alignItems="center" width="100%">
+                    {/* 名前といいねボタンを横並びにする */}
+                      <Text fontSize="2xl" fontWeight="bold" color="blue.600" borderBottom="2px solid #235180">
+                        名前: {user.name}
+                      </Text>
+                      <Spacer />
+                      <Button onClick={() => handleLike(user_attributes.user_id)}>
                         <Icon
-                          as={likes[user_attributes.user_id] ? AiFillHeart : AiOutlineHeart}
-                          fontSize="16px"
-                          color={likes[user_attributes.user_id] ? 'red.400' : 'gray.500'}
+                          as={likes[user_attributes.user_id]?.liked ? AiFillHeart : AiOutlineHeart}
+                          color={likes[user_attributes.user_id]?.liked ? "red.400" : "gray.500"}
                         />
-                      }
-                    >
-                      {likes[user_attributes.user_id] ? "いいね済" : "いいね"}
-                    </Button>
+                        {likes[user_attributes.user_id]?.liked ? "いいね済" : "いいね"}
+                      </Button>
                   </Box>
 
-                  <Box fontSize="md" color="gray.600" pl={6} textAlign="left">
-                    <Text>🎭 MBTI:{user_attributes.mbti}</Text>
+                  <Box>
+                    <Text>🎭 MBTI: {user_attributes.mbti}</Text>
                     <Text>🏠 出身地: {user_attributes.hometown}</Text>
-                    <Text>🏢 志望分野:{user_attributes.field}</Text>
+                    <Text>🏢 志望分野: {user_attributes.field}</Text>
                     <Text>💼 志望役割: {user_attributes.role}</Text>
                     <Text>🎓 出身大学: {user_attributes.alma_mater}</Text>
-                    <Text fontWeight="bold" mt={2}>🎨 趣味</Text>
                     <Wrap mt={1}>
                       {user_attributes.hobbies.split(", ").map((hobby, index) => (
                         <WrapItem key={index}>
-                          <Badge colorScheme="blue" px={2} py={1} borderRadius="md">
-                            {hobby}
-                          </Badge>
+                          <Badge colorScheme="blue">{hobby}</Badge>
                         </WrapItem>
                       ))}
                     </Wrap>
+                    <Text fontWeight="bold" mt={3}>📝 自己紹介</Text>
+                    <Text color="gray.700" mt={1}>{user_attributes.self_introductions}</Text>
                   </Box>
+
+                  {likes[user_attributes.user_id]?.liked && (
+                    <Box mt={3}>
+                      <Textarea
+                        placeholder="いいねの理由を入力"
+                        value={likes[user_attributes.user_id]?.reason || ""}
+                        onChange={(e) => handleReasonChange(user_attributes.user_id, e.target.value)}
+                      />
+                      <Button mt={2} onClick={() => submitLike(user_attributes.user_id)}>
+                        送信
+                      </Button>
+                    </Box>
+                  )}
                 </ListItem>
-              ) : null;  // ユーザーが見つからない場合はnullを返す
+              ) : null;
             })}
           </List>
         </Box>

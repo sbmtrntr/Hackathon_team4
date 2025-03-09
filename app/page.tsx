@@ -26,8 +26,8 @@ export default function Home() {
                 />
               
             <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.600" maxW="2xl">
-              2025年卒の同期社会人とつながり、新しい友人や仲間を見つけましょう。
-              同じタイミングで社会人になった仲間との交流で、充実したキャリアをスタートさせましょう。
+              2025年卒の同期とつながり、新しい友人や仲間を見つけましょう。<br></br>
+              同じタイミングで社会人になった仲間との交流で、<br></br>充実したキャリアをスタートさせましょう。
             </Text>
 
             <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
