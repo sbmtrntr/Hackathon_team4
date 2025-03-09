@@ -152,15 +152,18 @@ const MatchingResult = () => {
           <Text fontSize="lg" color="gray.700" textAlign="center">
             あなたにぴったりなユーザーを見つけました！
           </Text>
+          <Box display="flex" alignItems="center" justifyContent="center">
           <Button 
                   onClick={handleChannelRedirect} 
                   textColor="white"
                   bg="#235180" 
                   size="sm" 
                   alignSelf="flex-start"
+                  alignItems="center"
                 >
                   あなたにオススメのユーザーが集まるチャンネルを覗く👀
                 </Button>
+                </Box>
           <List spacing={3}>
             {users_attributes.map((user_attributes) => {
               const user = users.find((u) => u.id === user_attributes.user_id);
