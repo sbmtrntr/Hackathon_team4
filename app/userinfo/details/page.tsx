@@ -48,14 +48,15 @@ type User = {
   mbti: string;
   alma_mater: string;
   preferences: string;
-  hometown: string;
+  hometown: string; // hometownを追加
   self_introductions: string;
-  name?: string;
+  name?: string;  // nameはSupabaseから取得していない場合があるのでオプショナルに
 };
 
 export default function RegisterDetailsPage() {
   const router = useRouter();
 
+  // Wrap useSearchParams() inside Suspense
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <SearchParamsWrapper router={router} />
@@ -78,7 +79,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
       if (error) {
         console.log('Error fetching users:', error);
         alert("ユーザープロフィールが見つかりませんでした．");
-        router.push('/userinfo');
+        router.push('/userinfo')
         return;
       } else if (data) {
         setUsers(data);
@@ -108,6 +109,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
     self_introductions: '',
   });
 
+  // usersデータが取得されたらformDataに反映
   useEffect(() => {
     if (users.length > 0) {
       const user = users[0];
@@ -122,8 +124,8 @@ function SearchParamsWrapper({ router }: { router: any }) {
         self_introductions: user.self_introductions || '',
       });
     }
-  }, [users]);
-
+  }, 
+  [users]);
   const handleHobbyToggle = (hobby: string) => {
     setFormData((prev) => {
       const updatedHobbies = prev.hobbies.includes(hobby)
@@ -137,7 +139,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
     e.preventDefault();
 
     if (!userId) return;
-
+      
     const { error } = await supabase
       .from('user_attributes')
       .update([{ 
@@ -150,7 +152,7 @@ function SearchParamsWrapper({ router }: { router: any }) {
         alma_mater: formData.almaMater, 
         preferences: formData.preferences,
         self_introductions: formData.self_introductions}])
-      .eq("user_id", userId);
+      .eq("user_id",userId);
 
     if (error) {
       alert("登録に失敗しました。");
@@ -163,31 +165,98 @@ function SearchParamsWrapper({ router }: { router: any }) {
 
   return (
     <Box minH="100vh" py={12} px={4} bg="gray.50">
-      <Container maxW="md">
-        <Card shadow="xl" borderRadius="xl">
-          <CardHeader>
-            <VStack spacing={4}>
-              <Heading size="md">プロフィール詳細</Heading>
-            </VStack>
-          </CardHeader>
+        <Container maxW="md">
+          <Card shadow="xl" borderRadius="xl">
+            <CardHeader>
+              <VStack spacing={4}>
+                <Heading size="md">プロフィール詳細</Heading>
+              </VStack>
+            </CardHeader>
 
-          <CardBody>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={4}>
-                {/* Form controls */}
-                <FormControl isRequired>
-                  <FormLabel>MBTI</FormLabel>
-                  <Select name="mbti" value={formData.mbti} onChange={(e) => setFormData({ ...formData, mbti: e.target.value })}>
-                    {MBTI_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-                  </Select>
-                </FormControl>
-                {/* Other form controls here... */}
-                <Button type="submit" colorScheme="blue" size="lg" w="full">編集完了</Button>
-              </Stack>
-            </form>
-          </CardBody>
-        </Card>
-      </Container>
+            <CardBody>
+                <form onSubmit={handleSubmit}>
+                  <Stack spacing={4}>
+                    <FormControl isRequired>
+                      <FormLabel>MBTI</FormLabel>
+                      <Select name="mbti" value={formData.mbti} onChange={(e) => setFormData({ ...formData, mbti: e.target.value })}>
+                        {MBTI_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>希望分野</FormLabel>
+                      <Select name="field" value={formData.field} onChange={(e) => setFormData({ ...formData, field: e.target.value })}>
+                        {FIELDS.map((field) => <option key={field} value={field}>{field}</option>)}
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>希望職種</FormLabel>
+                      <Select name="role" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
+                        {ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>趣味</FormLabel>
+                      <Stack direction="row" flexWrap="wrap">
+                        {HOBBIES.map((hobby) => (
+                          <Tag
+                            key={hobby}
+                            size="lg"
+                            variant={formData.hobbies.includes(hobby) ? "solid" : "outline"}
+                            colorScheme="blue"
+                            cursor="pointer"
+                            onClick={() => handleHobbyToggle(hobby)}
+                            m={1}
+                          >
+                            <TagLabel>{hobby}</TagLabel>
+                            {formData.hobbies.includes(hobby) && <TagCloseButton />}
+                          </Tag>
+                        ))}
+                      </Stack>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>出身地</FormLabel>
+                      <Select name="hometown" value={formData.hometown} onChange={(e) => setFormData({ ...formData, hometown: e.target.value })}>
+                        {PREFECTURES.map((prefecture) => <option key={prefecture} value={prefecture}>{prefecture}</option>)}
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>出身校</FormLabel>
+                      <Input
+                        type="text"
+                        name="almaMater"
+                        value={formData.almaMater}
+                        onChange={(e) => setFormData({ ...formData, almaMater: e.target.value })}
+                        placeholder="大学名を入力"
+                      />
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>重視する項目</FormLabel>
+                      <Select name="preferences" value={formData.preferences} onChange={(e) => setFormData({ ...formData, preferences: e.target.value })}>
+                        {PREFERENCES.map((preference) => <option key={preference} value={preference}>{preference}</option>)}
+                      </Select>
+                    </FormControl>
+                    
+                    {/* 自己紹介 */}
+                    <FormControl isRequired>
+                      <FormLabel>自己紹介</FormLabel>
+                      <Textarea
+                        name="self_introductions"
+                        value={formData.self_introductions}
+                        onChange={(e) => setFormData({ ...formData, self_introductions: e.target.value })}
+                        placeholder="自己紹介文を入力してください"/>
+                    </FormControl>
+                    <Button type="submit" colorScheme="blue" size="lg" w="full">編集完了</Button>
+                  </Stack>
+                </form>
+            </CardBody>
+          </Card>
+        </Container>
     </Box>
-  );
+  )
 }
