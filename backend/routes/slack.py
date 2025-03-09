@@ -5,7 +5,6 @@ from urllib.parse import urlencode
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from config import SLACK_BOT_TOKEN
-from clustering import clustering
 
 router = APIRouter()
 client = WebClient(token=SLACK_BOT_TOKEN)
@@ -52,31 +51,60 @@ def connect_dm(slack_id1: str, slack_id2: str):
     return {"URL": slack_dm_url}
 
 
-def create_slack_channel(channel_name):
-    """Slackのプライベートチャンネルを作成"""
+@router.get("/send-greeting")
+def send_greeting(user1_slack_id: str, user2_slack_id: str, common_point: str):
     try:
-        response = client.conversations_create(name=channel_name, is_private=True)
-        return response["channel"]["id"]
-    except SlackApiError as e:
-        print(f"Error creating channel: {e.response['error']}")
-        return None
-    
+        # DMチャネルを開く
+        response = client.conversations_open(users=[user1_slack_id, user2_slack_id])
+        channel_id = response["channel"]["id"]
 
-def invite_users_to_channel(channel_id, user_ids):
-    """Slackチャンネルにユーザーを招待"""
-    try:
-        client.conversations_invite(channel=channel_id, users=user_ids)
-        print(f"Invited users {user_ids} to channel {channel_id}")
-    except SlackApiError as e:
-        print(f"Error inviting users: {e.response['error']}")
+        user2_name = supabase.table("users").select("name").eq("slack_id", user2_slack_id).execute().data[0]["name"]
 
+        # メッセージ内容
+        message = f"こんにちは！あなたと{user2_name}さんには{common_point}の共通点があります。まずは挨拶してみましょう"
 
-def create_slack_channel_for_cluster(df_processed):
-    """クラスタごとに Slack チャンネルを作成し、ユーザーを招待"""
-    for cluster_id, group in df_processed.groupby("cluster"):
-        channel_name = f"group_{cluster_id}"
-        channel_id = create_slack_channel(channel_name)
+        # メッセージを送信
+        client.chat_postMessage(channel=channel_id, text=message)
         
-        if channel_id:
-            user_ids = group["user_id"].tolist()  # Supabase の user_id を Slack のユーザーID に変換する処理が必要
-            invite_users_to_channel(channel_id, user_ids)
+        return {"message": "メッセージが送信されました。", "channel_id": channel_id}
+
+    except SlackApiError as e:
+        return {"error": f"Slack APIエラー: {e.response['error']}"}
+
+
+@router.get("/invite")
+def invite_user_to_slack(user_id: str):
+    # Supabase から `cluster_id` を取得
+    response = supabase.table("users").select("cluster").eq("id", user_id).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    cluster_id = response.data[0]["cluster"]
+    
+    # クラスタ ID から Slack チャンネル ID を取得
+    channel_id = CLUSTER_TO_CHANNEL.get(cluster_id)
+    if not channel_id:
+        raise HTTPException(status_code=400, detail="Cluster ID is not mapped to a Slack channel")
+
+    # ユーザーの Slack ID を取得
+    response = supabase.table("users").select("slack_id").eq("id", user_id).execute()
+    if not response.data or not response.data[0]["slack_id"]:
+        raise HTTPException(status_code=400, detail="Slack ID not found for user")
+
+    slack_user_id = response.data[0]["slack_id"]
+
+    # Slack API でチャンネルに招待
+    headers = {"Authorization": f"Bearer {SLACK_BOT_TOKEN}"}
+    invite_response = requests.post(
+        "https://slack.com/api/conversations.invite",
+        headers=headers,
+        json={"channel": channel_id, "users": slack_user_id}
+    )
+
+    invite_data = invite_response.json()
+    if not invite_data.get("ok"):
+        raise HTTPException(status_code=500, detail=f"Slack API error: {invite_data.get('error')}")
+
+    # チャンネルのリンクを生成して返す
+    invite_link = f"https://slack.com/app_redirect?channel={channel_id}"
+    return {"channel_id": channel_id, "invite_link": invite_link}
