@@ -148,3 +148,25 @@ def check_matching(user_id1: str, user_id2: str):
     is_match = bool(like1.data) and bool(like2.data)
 
     return {"match": is_match}
+
+@router.get("/common_attributes")
+def get_common_attributes(user_id1: str, user_id2: str):
+    # user_id1の属性を取得
+    user1_data = supabase.table("user_attributes").select("*").eq("user_id", user_id1).single().execute()
+    user1 = user1_data.data
+
+    # user_id2の属性を取得
+    user2_data = supabase.table("user_attributes").select("*").eq("user_id", user_id2).single().execute()
+    user2 = user2_data.data
+
+    # 共通の属性を取得
+    common_attributes = {
+        "hometown": user1["hometown"] if user1["hometown"] == user2["hometown"] else None,
+        "field": user1["field"] if user1["field"] == user2["field"] else None,
+        "role": user1["role"] if user1["role"] == user2["role"] else None,
+        "mbti": user1["mbti"] if user1["mbti"] == user2["mbti"] else None,
+        "alma_mater": user1["alma_mater"] if user1["alma_mater"] == user2["alma_mater"] else None,
+        "hobbies": [hobby for hobby in user1["hobbies"].split(", ") if hobby in user2["hobbies"].split(", ")]
+    }
+    common_attribute = {k: v for k, v in common_attributes.items() if v is not None}
+    return {"common_attribute": common_attribute}
