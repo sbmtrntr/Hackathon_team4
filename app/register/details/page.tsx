@@ -126,18 +126,13 @@ function SearchParamsWrapper({ router }: { router: any }) {
       }]);
 
     if (error) {
-      alert(formData.preferences);
+      //alert(formData.preferences);
       alert("登録に失敗しました。");
       return;
     }
 
     //alert("プロフィールが完成しました！");
     const response = await axios.get(`${CLOUD_RUN_URL}/assign_new_user_to_cluster?user_id=${userId}`);
-    if (response.status === 200) {
-      window.location.href = response.data.URL;
-    } else {
-      console.error("エラー:", response.data);
-    }
     router.push(`/matching?userId=${userId}`);
   };
 
