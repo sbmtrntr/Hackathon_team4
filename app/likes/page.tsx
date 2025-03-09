@@ -189,16 +189,6 @@ const LikesPageContent = () => {
 
   return (
     <VStack spacing={6}>
-      <Button 
-        onClick={handleChannelRedirect} 
-        textColor="white"
-        bg="#235180" 
-        size="sm" 
-        alignSelf="flex-start"
-      >
-        チャンネルへ移行
-      </Button>
-      
       <Box maxW="lg" mx="auto" bg="white" boxShadow="lg" borderRadius="lg" p={6} textAlign="center">
         <Heading as="h1" size="md" color="gray.800" borderBottom="2px solid" pb={2}>
           いいねしたユーザ

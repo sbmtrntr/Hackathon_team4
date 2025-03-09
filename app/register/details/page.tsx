@@ -10,6 +10,8 @@ import {
   TagCloseButton, Grid, GridItem, Icon, Tooltip
 } from "@chakra-ui/react";
 import { FaUser, FaBriefcase, FaMapMarkerAlt, FaUniversity, FaHeart, FaPen } from "react-icons/fa";
+import { CLOUD_RUN_URL } from '@/utils/config';
+import axios from 'axios';
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -129,7 +131,13 @@ function SearchParamsWrapper({ router }: { router: any }) {
       return;
     }
 
-    alert("プロフィールが完成しました！");
+    //alert("プロフィールが完成しました！");
+    const response = await axios.get(`${CLOUD_RUN_URL}/assign_new_user_to_cluster?user_id=${userId}`);
+    if (response.status === 200) {
+      window.location.href = response.data.URL;
+    } else {
+      console.error("エラー:", response.data);
+    }
     router.push(`/matching?userId=${userId}`);
   };
 
