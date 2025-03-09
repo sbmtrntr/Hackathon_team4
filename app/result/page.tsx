@@ -7,6 +7,8 @@ import {
 } from "@chakra-ui/react";
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 import { createClient } from "@supabase/supabase-js";
+import { CLOUD_RUN_URL } from "@/utils/config";
+import axios from "axios";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -115,6 +117,33 @@ const MatchingResult = () => {
     }
   };
 
+  const handleChannelRedirect = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get("userId") || "";
+      if (!userId) {
+        console.error("userIdが取得できていません");
+        return;
+      }
+  
+      try {
+        const { data: data, error: error } = await supabase
+        .from("users")
+        .select("cluster")
+        .eq("id", userId)
+        .single();
+  
+        const response = await axios.get(`${CLOUD_RUN_URL}/invite?user_id=${userId}`);
+        const response_join = await axios.get(`${CLOUD_RUN_URL}/join_slack_bot?id=${data?.cluster}&common_point=出身地`);
+        if (response.status === 200) {
+          window.location.href = response.data.URL;
+        } else {
+          console.error("チャンネルリダイレクトエラー:", response.data);
+        }
+      } catch (error) {
+        console.error("APIエラー:", error);
+      }
+    };
+
   return (
     <Center mt={10}>
       <VStack spacing={6}>
@@ -123,6 +152,15 @@ const MatchingResult = () => {
           <Text fontSize="lg" color="gray.700" textAlign="center">
             あなたにぴったりなユーザーを見つけました！
           </Text>
+          <Button 
+                  onClick={handleChannelRedirect} 
+                  textColor="white"
+                  bg="#235180" 
+                  size="sm" 
+                  alignSelf="flex-start"
+                >
+                  あなたにオススメのユーザーが集まるチャンネルを覗く👀
+                </Button>
           <List spacing={3}>
             {users_attributes.map((user_attributes) => {
               const user = users.find((u) => u.id === user_attributes.user_id);
